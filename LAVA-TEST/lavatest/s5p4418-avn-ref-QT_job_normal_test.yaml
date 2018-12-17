@@ -1,0 +1,53 @@
+device_type: s5p4418-avn-type
+job_name: s5p4418-test-definition
+timeouts:
+  job:
+    minutes: 60
+  action:
+    minutes: 30
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+protocols:
+  lava-lxc:
+    name: s5p4418-test
+    template: debian
+    distribution: debian
+    release: jessie
+    arch: amd64
+
+actions:
+  - deploy:
+      namespace: s5p4418-test
+      timeout:
+        minutes: 10
+      to: lxc
+      os: oe
+      nexell_ext: dummy
+
+  - boot:
+      namespace: s5p4418-test
+      prompts:
+      - 'root@(.*):/#'
+      - 'root@(.*):~#'
+      - 'root@s5p4418-avn-ref:~#'
+      timeout:
+        minutes: 10
+      method: lxc
+      nexell_ext:
+          cmd: telnet
+          param: localhost 4001
+
+  - test:
+      namespace: s5p4418-test
+      timeout:
+        minutes: 10
+      connection: lxc
+      nexell_ext: dummy
+      definitions:
+          - repository: https://github.com/kchhero/helloworld_test.git
+            from: git
+            path: test-yaml/bsp/nexell-boot-check-qt.yaml
+            name: nexell-boot-test

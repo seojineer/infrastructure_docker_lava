@@ -1,0 +1,32 @@
+device_type: s5p4418-navi-type
+adb_serial_number: 123456789
+nexell_command: true
+fastboot_serial_number: 123456789
+device_path: ['/dev/ttyUSB0']
+
+actions:
+  deploy:
+    methods:
+      lxc:
+      fastboot:
+    connections:
+      lxc:
+      serial:
+  boot:
+    connections:
+      lxc:
+    methods:
+      lxc:
+      fastboot:
+
+timeouts:
+  actions:
+    apply-overlay-image:
+      seconds: 120
+    umount-retry:
+      seconds: 45
+    lava-test-shell:
+      seconds: 30
+  connections:
+    uboot-retry:
+      seconds: 60

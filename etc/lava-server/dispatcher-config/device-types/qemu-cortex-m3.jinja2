@@ -1,0 +1,34 @@
+{% extends 'base.jinja2' %}
+{% block body %}
+device_type: qemu
+
+# allow job context override - use a different variable name, undefined if not in job context
+{% set base_guest_fs_size = guestfs_size | default(512) %}
+
+actions:
+  deploy:
+    methods:
+      image:
+        parameters:
+          guest:
+            size: {{ base_guest_fs_size }}  # in Mb
+
+  boot:
+    connections:
+      serial:
+      ssh:
+    methods:
+      qemu:
+        parameters:
+          command:
+            qemu-system-arm
+          boot_options:
+          options:
+{% block qemu_options %}
+          - -nographic
+          - -vga none
+          - -cpu cortex-m3
+          - -machine {{ machine|default('lm3s6965evb') }}
+          - -serial mon:stdio
+{% endblock %}
+{% endblock %}

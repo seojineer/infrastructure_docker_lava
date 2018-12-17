@@ -1,0 +1,59 @@
+device_type: s5p4418-navi-type
+job_name: s5p4418-navi-ref-deploy-test
+timeouts:
+  job:
+    minutes: 60
+  action:
+    minutes: 30
+  connection:
+    minutes: 20
+priority: medium
+visibility: public
+
+protocols:
+  lava-lxc:
+    name: s5p4418-test
+    template: debian
+    distribution: debian
+    release: jessie
+    arch: amd64
+
+actions:
+  - deploy:
+      failure_retry: 3
+      namespace: s5p4418-deploy
+      timeout:
+        minutes: 10
+      to: fastboot
+      images:
+        nexell_ext:
+          url: /home/lava-slave/LAVA-TEST/
+          dir_name: result-s5p4418-navi_ref
+          deploy_script: /home/lava/bin/nexell-lava-commands.sh
+          deploy_command1: reboot-bootloader
+          deploy_command2: fastboot-download
+          #deploy_command1: test1
+          #deploy_command2: test2
+          afterdeploy_command1: 'False'
+          afterdeploy_command2: 'False'
+          test: nothing
+      os: oe
+  - boot:
+      namespace: s5p4418-deploy
+      prompts:
+      - 'navi_ref:/'
+      auto_login:
+        login_prompt: 's5p4418-navi-ref login:'
+        username: root
+      parameters:
+        shutdown-message: "reboot: Restarting system"
+      timeout:
+        minutes: 15
+      method: fastboot
+      nexell_ext:
+          command: /home/lava/bin/nexell-lava-commands.sh
+          dir_name: result-s5p4418-navi_ref
+          #command_param: boot-on-uboot
+          #command_param: uboot-serial
+          command_param: boot
+          command_param2: enter

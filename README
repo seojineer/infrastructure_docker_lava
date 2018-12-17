@@ -1,0 +1,78 @@
+<DESCIPTION Tree>
+adb     : need to lava-slave docker
+.bashrc : lava-server & lava-slave bash environment
+build.sh : docker build script
+           usage) ./build.sh yes #no-cache=true
+                  ./build.sh no  #no-cache=false
+
+Dockerfile-server : lava-server dockerfile
+Dockerfile-slave  : lava-slave dockerfile
+
+etc : In lava-server & lava-slave configuration files
+
+home : devices & device-type yaml files
+
+home-bin-server : lava-server only customize
+home-bin-slave  : lava-slave only customize
+LAVA-TEST   :   lava-slave host PC using scripts
+
+push.sh   :  docker push scripts
+root      :  important, lava-server & lava-slave init scripts
+
+run-server.sh : docker lava-server start script on lava-server host PC
+run-slave.sh  : docker lava-slave start script on lava-slave host PC
+usr           : lava-server & lava-slave common - nexell customize source,
+                this needs to be overwrite original lava-source
+
+
+
+HOW-TO LAVA run
+
+<LAVA-SERVER>
+IP : 192.168.1.18
+id : lava-nexell
+pw : nx.linux
+
+cd ~/LAVA-SERVER
+./run-server.sh
+
+into docker
+--> cd /home/lava/bin
+    ./add-nexell-devices-to-lava.sh
+
+browser ==> 192.168.1.18
+login : id/pw  admin/admin
+
+
+
+<LAVA-SLAVE>
+IP : 192.168.1.19
+id : lava-slave
+pw : nexell.linux
+
+cd ~/LAVA-SLAVE
+adb kill-server
+
+./run-slave.sh
+into docker
+--> cd /home/lava/bin
+    ./setup.sh
+
+
+
+<Target>
+usb download mode -> reset -> ready
+
+
+
+<Jenkins-setup>
+SSH Server
+ 	Name
+                LAVA-dispatcher
+Send build artifacts over SSH
+ 	Source files
+		result-s5p4418-avn-ref-qt/**
+ 	Exec command
+		/home/lava-slave/LAVA-TEST/lava-test.sh s5p4418-avn-ref-qt
+        Exec timeout
+                3600000
