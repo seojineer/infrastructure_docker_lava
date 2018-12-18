@@ -6,11 +6,11 @@ RUN apt-get update; exit 0
 RUN apt-get install -y android-tools-adb
 
 # Install all dependencies
-RUN apt-get update; exit 0
-RUN apt-get install -y wget libc6-i386 lib32stdc++6 && \
-    apt-get clean && \
-    apt-get autoclean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+#RUN apt-get update; exit 0
+#RUN apt-get install -y wget libc6-i386 lib32stdc++6 && \
+    #apt-get clean && \
+    #apt-get autoclean && \
+    #rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 #RUN apt-get install -y openjdk-7-jre-headless
 
 # Install android tools + sdk
@@ -29,16 +29,16 @@ RUN mkdir -p /home/lava
 
 COPY ./home-bin-slave /home/lava/bin
 COPY ./home /home
-COPY ./etc /etc
+#COPY ./etc /etc
 COPY ./usr /usr
 
 COPY .bashrc /root/
 
-COPY ./root/start-slave.sh /start.sh
-COPY ./root/stop-slave.sh /stop.sh
+#COPY ./root/start-slave.sh /start.sh
+#COPY ./root/stop-slave.sh /stop.sh
 
 EXPOSE 69 80 5555 5556
 
-RUN mkdir -p /var/lib/nexell
+#RUN mkdir -p /var/lib/nexell
 
-CMD /start.sh && bash
+#CMD /start.sh && bash
