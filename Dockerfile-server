@@ -1,24 +1,16 @@
 FROM lavasoftware/amd64-lava-server:2018.11
 
-#RUN apt-get update; exit 0
+RUN apt-get install -y vim lavacli
 
-#RUN apt-get install -y emacs24 vim
-RUN apt-get install -y vim
-
-RUN mkdir -p /home/lava
+#RUN mkdir -p /home/lava
 
 COPY ./home-bin-server /home/lava/bin
 COPY ./home /home
+
 COPY ./etc /etc
-COPY ./usr /usr
-
+#COPY ./usr /usr
 #COPY .bashrc /root/
-
-#COPY ./root/start-server.sh /start.sh
-#COPY ./root/stop-server.sh /stop.sh
 
 #RUN mkdir -p /var/lib/nexell
 
 EXPOSE 69 80 5555 5556 5432 8000
-
-#CMD /start.sh && bash
