@@ -20,8 +20,8 @@ else
     echo "Error!!"
 fi
 
-docker image build ${CACHE_OPTION} -t nexelldocker/lava-server:2018.11 -f Dockerfile-server .
+docker build ${CACHE_OPTION} -t nexelldocker/lava-server:2018.11 -f Dockerfile-server .
 echo "---------------------------------------------------------------"
 echo "---------------------------------------------------------------"
 echo "---------------------------------------------------------------"
-docker image build ${CACHE_OPTION} -t nexelldocker/lava-slave:2018.11 -f Dockerfile-slave .
+docker build ${CACHE_OPTION} -t nexelldocker/lava-slave:2018.11 -f Dockerfile-slave .
