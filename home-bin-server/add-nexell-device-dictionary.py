@@ -13,10 +13,10 @@ file.close()
 server.scheduler.import_device_dictionary("qemu01", jinja_string)
 
 # qemu02
-file = open('/home/lava/bin/nexell-device-dic/qemu02.jinja2','r')
-jinja_string = file.read()
-file.close()
-server.scheduler.import_device_dictionary("qemu02", jinja_string)
+#file = open('/home/lava/bin/nexell-device-dic/qemu02.jinja2','r')
+#jinja_string = file.read()
+#file.close()
+#server.scheduler.import_device_dictionary("qemu02", jinja_string)
 
 # imx8m
 file = open('/home/lava/bin/nexell-device-dic/imx8m-01.jinja2','r')
