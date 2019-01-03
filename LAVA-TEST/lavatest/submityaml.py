@@ -8,7 +8,7 @@ import xmlrpclib
 SLEEP = 5
 __version__ = 0.5
 
-LAVA_SERVER_IP = "192.168.1.26"
+LAVA_SERVER_IP = "192.168.1.20"
 
 def is_valid_file(parser, arg, flag):
     if not os.path.exists(arg):

@@ -29,7 +29,7 @@ usr           : lava-server & lava-slave common - nexell customize source,
 HOW-TO LAVA run
 
 <LAVA-SERVER>
-IP : 192.168.1.18
+IP : 192.168.1.20
 id : lava-nexell
 pw : nx.linux
 

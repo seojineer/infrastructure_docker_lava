@@ -3,7 +3,7 @@ import sys
 
 username = "admin"
 token = "4sooz0l6j4fltduhs02e7lj2tjzo0nl8dneq5zlwx6zs674gju6k96wd3jr1srr05f4h8uy1fobt001f2zre3hoq0eqo036rppggir1f0ky3d6fycwtcucp9gfis9hs5"
-hostname = "192.168.1.44:9099"
+hostname = "192.168.1.20:9099"
 server = xmlrpc.client.ServerProxy("http://%s:%s@%s/RPC2" % (username, token, hostname), allow_none=True)
 
 # qemu01
