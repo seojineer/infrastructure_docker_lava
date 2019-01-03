@@ -167,6 +167,7 @@ class EnterNexellFastbootAction(DeployAction):
     def run(self, connection, args=None):
         connection = super(EnterNexellFastbootAction, self).run(connection, args)        
         self.logger.debug("[SEOJI] param1: %s, param2: %s", self.param1, self.param2)
+        self.logger.debug("[SEOJI] param: %s", self.job.device)
         #test_path = self.job.device['device_path']
         # get param from job file
         test_path = self.device_path
@@ -190,9 +191,9 @@ class ApplyNexellDeployAction(DeployAction):
         self.summary = "fastboot apply nexell"
         self.retries = 1
         self.sleep = 3
-        self.cmd_script = parameters['images']['nexell_ext']['deploy_script']
-        self.cmd_param1 = parameters['images']['nexell_ext']['deploy_command1']
-        self.cmd_param2 = parameters['images']['nexell_ext']['deploy_command2']
+        self.cmd_script = parameters['images']['nexell_ext'][key1]
+        self.cmd_param1 = parameters['images']['nexell_ext'][key2]
+        self.cmd_param2 = parameters['images']['nexell_ext'][key3]
         self.device_path = parameters['images']['nexell_ext']['device_path']
 
     def validate(self):

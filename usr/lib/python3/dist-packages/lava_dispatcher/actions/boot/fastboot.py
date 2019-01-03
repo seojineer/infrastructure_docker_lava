@@ -105,6 +105,8 @@ class BootFastbootAction(BootAction):
 
     def validate(self):
         super().validate()
+        self.logger.debug("[SEOJI] self.job.device: %s", self.job.device)
+        self.logger.debug("[SEOJI] param: %s", self.job.device['actions']['boot']['methods'])
         sequences = self.job.device['actions']['boot']['methods'].get(
             'fastboot', [])
         if sequences is not None:
@@ -120,10 +122,12 @@ class BootFastbootAction(BootAction):
 
         # Nexell Extension
         if len(parameters['nexell_ext']) > 0:
+            self.logger.debug("[SEOJI] ****** parameters: %s", parameters)
             self.internal_pipeline.add_action(NexellFastbootBootAction(parameters))
-            #self.internal_pipeline.add_action(ConnectTelnet(parameters))
             #self.internal_pipeline.add_action(WaitForAdbDeviceForNexell())
+            #self.internal_pipeline.add_action(ConnectDevice())
             self.internal_pipeline.add_action(ConnectTelnet(parameters))
+            self.logger.debug("[SEOJI] WaitForPromptForNexell")
             self.internal_pipeline.add_action(WaitForPromptForNexell(parameters))
         else:
             if parameters.get("commands"):
@@ -182,15 +186,18 @@ class NexellFastbootBootAction(Action):
         self.dir_name = parameters['nexell_ext']['dir_name']
         self.cmd_script = parameters['nexell_ext']['command']
         self.cmd_param = parameters['nexell_ext']['command_param']
+        self.device_path = parameters['nexell_ext']['device_path']
 
     def validate(self):
         super(NexellFastbootBootAction, self).validate()
 
     def run(self, connection, args=None):
         connection = super(NexellFastbootBootAction, self).run(connection, args)
-        test_path = self.job.device['device_path']
-        self.logger.debug("test_path:%s",test_path[0])
-        cmd = [self.cmd_script, self.cmd_param, self.dir_name, test_path[0]]
+        #test_path = self.job.device['device_path']
+        # get device_path from job file
+        test_path = self.device_path
+        self.logger.debug("test_path:%s",test_path)
+        cmd = [self.cmd_script, self.cmd_param, self.dir_name, test_path]
         command_output = self.run_command(cmd)
         self.data['boot-result'] = 'failed' if self.errors else 'success'
         return connection
@@ -210,18 +217,20 @@ class WaitForPromptForNexell(Action):
         self.prompts = parameters['prompts']
         self.cmd_script = parameters['nexell_ext']['command']
         self.cmd_param = parameters['nexell_ext']['command_param2']
+        self.device_path = parameters['nexell_ext']['device_path']
 
     def validate(self):
         super(WaitForPromptForNexell, self).validate()
 
     def run(self, connection, args=None):
         connection = super(WaitForPromptForNexell, self).run(connection, args)
-        test_path = self.job.device['device_path']
-        self.logger.debug("test_path:%s",test_path[0])
-        cmd = [self.cmd_script, self.cmd_param, self.dir_name2, test_path[0]]
+        #test_path = self.job.device['device_path']
+        test_path = self.device_path
+        self.logger.debug("test_path:%s",test_path)
+        cmd = [self.cmd_script, self.cmd_param, self.dir_name2, test_path]
         command_output = self.run_command(cmd)
-	connection.prompt_str = self.prompts
-	self.wait(connection)
+        connection.prompt_str = self.prompts
+        self.wait(connection)
         return connection
 
 # Nexell extension

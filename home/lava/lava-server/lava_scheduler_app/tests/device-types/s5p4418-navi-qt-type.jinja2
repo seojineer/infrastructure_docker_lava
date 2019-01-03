@@ -1,10 +1,6 @@
+{# device_type: s5p4418-navi-qt-type #}
 {% extends 'base.jinja2' %}
 {% block body %}
-device_type: s5p4418-navi-qt-type
-nexell_command: true
-adb_serial_number: '{{ adb_serial_number|default('0000000000') }}'
-fastboot_serial_number: '{{ fastboot_serial_number|default('0000000000') }}'
-device_path: {{ device_path|default([]) }}
 
 {% block vland %}
 {# skip the parameters dict at top level #}
@@ -13,6 +9,7 @@ device_path: {{ device_path|default([]) }}
 actions:
   deploy:
     methods:
+      qemu-nfs:
       lxc:
       fastboot:
     connections:
@@ -20,9 +17,11 @@ actions:
       serial:
   boot:
     connections:
+      ssh:
       lxc:
     methods:
       lxc:
       fastboot:
+      qemu:
 
 {% endblock %}
