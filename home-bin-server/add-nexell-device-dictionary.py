@@ -2,7 +2,7 @@ import xmlrpc.client
 import sys
 
 username = "admin"
-token = "4sooz0l6j4fltduhs02e7lj2tjzo0nl8dneq5zlwx6zs674gju6k96wd3jr1srr05f4h8uy1fobt001f2zre3hoq0eqo036rppggir1f0ky3d6fycwtcucp9gfis9hs5"
+token = "bpexdhlth2sckkst1pslnklklw9enis92oe0ncqc4n7yby6mb5bxapof9ll503gqcqaq3rbq6o1765njgtydwozsjudur9bee8escj4zblqmbds0el0ud10qclbbn2hs"
 hostname = "192.168.1.20:9099"
 server = xmlrpc.client.ServerProxy("http://%s:%s@%s/RPC2" % (username, token, hostname), allow_none=True)
 
@@ -29,3 +29,9 @@ file = open('/home/lava/bin/nexell-device-dic/s5p4418-navi-ref-qt.jinja2','r')
 jinja_string = file.read()
 file.close()
 server.scheduler.import_device_dictionary("s5p4418-navi-ref-qt", jinja_string)
+
+# s5p4418-navi-ref
+file = open('/home/lava/bin/nexell-device-dic/s5p4418-navi-ref.jinja2','r')
+jinja_string = file.read()
+file.close()
+server.scheduler.import_device_dictionary("s5p4418-navi-ref", jinja_string)

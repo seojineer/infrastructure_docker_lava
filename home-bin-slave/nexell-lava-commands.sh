@@ -35,7 +35,7 @@ function run_command()
 		# yocto
 		else
 			echo "yocto"
-			cp /opt/share/standalone-fastboot-download.sh /opt/share/$path/tools/standalone-fastboot-download.sh
+			#cp /opt/share/standalone-fastboot-download.sh /opt/share/$path/tools/standalone-fastboot-download.sh
 			/opt/share/$path/tools/standalone-uboot-by-usb-download.sh
 
 			echo "yocto uboot" >> /opt/share/log.txt
