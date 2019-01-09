@@ -16,7 +16,7 @@ def args_parser():
     """ args parser.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("yamlfile", help="specify target job file", type=argparse.FileType('r'))
+    parser.add_argument('job_file', help="job_file", type=str)
 
     return parser.parse_args()
 
@@ -29,7 +29,10 @@ def process():
     args = args_parser()
 
     server = xmlrpc.client.ServerProxy("http://%s:%s@%s/RPC2" % (username, token, hostname), allow_none=True)
-    yamlfile = loadJob()
+    #yamlfile = loadJob()
+    file = open(args.job_file,'r')
+    yamlfile = file.read()
+    file.close()
 
     server.scheduler.submit_job(yamlfile)
 
