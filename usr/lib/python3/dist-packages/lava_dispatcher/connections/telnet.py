@@ -97,6 +97,7 @@ class ConnectTelnet(Action):
         #cmd = "telnet 192.168.1.19 4001"
         self.logger.debug("devices:%s",devices[0])
         cmd = self.job.device['commands']['connect']
+        self.logger.debug("[SEOJI] cmd:" + cmd)
         #cmd_str = ['cat',devices[0]]
         #cmd = ' '.join(cmd_str)
         self.logger.info("%s Connecting to device using '%s'", self.name, cmd)

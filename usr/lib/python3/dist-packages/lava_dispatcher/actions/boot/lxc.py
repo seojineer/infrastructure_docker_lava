@@ -73,7 +73,7 @@ class BootLxcAction(BootAction):
     def populate(self, parameters):
         self.internal_pipeline = Pipeline(parent=self, job=self.job, parameters=parameters)
         # Nexell extension
-        if parameters['nexell_ext'] :
+        if 'nexell_ext' in parameters :
             self.internal_pipeline.add_action(NexellStartAction())
             self.internal_pipeline.add_action(ConnectNexell())
             #self.internal_pipeline.add_action(AutoLoginAction())

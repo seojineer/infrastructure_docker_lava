@@ -39,6 +39,7 @@ from lava_dispatcher.connections.adb import ConnectAdb
 from lava_dispatcher.actions.boot.environment import ExportDeviceEnvironment
 from lava_dispatcher.shell import ExpectShellSession
 from lava_dispatcher.actions.boot.u_boot import UBootEnterFastbootAction
+from lava_dispatcher.actions.deploy.apply_overlay import ApplyNexellOverlay
 
 
 def _fastboot_sequence_map(sequence):
@@ -105,6 +106,7 @@ class BootFastbootAction(BootAction):
 
     def validate(self):
         super().validate()
+        self.logger.debug("[SEOJI] BootFastbootAction validate()")
         self.logger.debug("[SEOJI] self.job.device: %s", self.job.device)
         self.logger.debug("[SEOJI] param: %s", self.job.device['actions']['boot']['methods'])
         sequences = self.job.device['actions']['boot']['methods'].get(
@@ -114,6 +116,7 @@ class BootFastbootAction(BootAction):
                 if not _fastboot_sequence_map(sequence):
                     self.errors = "Unknown boot sequence '%s'" % sequence
         else:
+            self.logger.debug("[SEOJI] fastboot_sequence undefined")
             self.errors = "fastboot_sequence undefined"
 
     def populate(self, parameters):
@@ -121,16 +124,19 @@ class BootFastbootAction(BootAction):
                                           parameters=parameters)
 
         # Nexell Extension
-        if len(parameters['nexell_ext']) > 0:
+        if 'nexell_ext' in parameters:
             self.logger.debug("[SEOJI] ****** parameters: %s", parameters)
             self.internal_pipeline.add_action(NexellFastbootBootAction(parameters))
-            #self.internal_pipeline.add_action(WaitForAdbDeviceForNexell())
-            #self.internal_pipeline.add_action(ConnectDevice())
-            self.internal_pipeline.add_action(ConnectTelnet(parameters))
-            self.logger.debug("[SEOJI] WaitForPromptForNexell")
-            self.internal_pipeline.add_action(WaitForPromptForNexell(parameters))
+            # SEOJI 190116 add for adb push overlay files to DUT
+            self.internal_pipeline.add_action(WaitForAdbDeviceForNexell())
+            self.internal_pipeline.add_action(ApplyNexellOverlay())
+            self.internal_pipeline.add_action(ConnectDevice())
+            #self.internal_pipeline.add_action(ConnectTelnet(parameters))
+            #self.internal_pipeline.add_action(WaitForPromptForNexell(parameters))
+            self.internal_pipeline.add_action(ExpectShellSession())
         else:
             if parameters.get("commands"):
+                self.logger.debug("[SEOJI] boot - add BootFastbootCommands()")
                 self.internal_pipeline.add_action(BootFastbootCommands())
 
             # Always ensure the device is in fastboot mode before trying to boot.
@@ -144,12 +150,15 @@ class BootFastbootAction(BootAction):
                 self.internal_pipeline.add_action(ConnectDevice())
                 self.internal_pipeline.add_action(ResetDevice())
             else:
+                self.logger.debug("[SEOJI] boot - add EnterFastbootAction")
                 self.internal_pipeline.add_action(EnterFastbootAction())
 
             # Based on the boot sequence defined in the device configuration, add
             # the required pipeline actions.
+            self.logger.debug("[SEOJI] get sequences")
             sequences = self.job.device['actions']['boot']['methods'].get(
                 'fastboot', [])
+            self.logger.debug("[SEOJI] sequences" + str(sequences))
             for sequence in sequences:
                 mapped = _fastboot_sequence_map(sequence)
                 if mapped[1]:
@@ -198,8 +207,11 @@ class NexellFastbootBootAction(Action):
         test_path = self.device_path
         self.logger.debug("test_path:%s",test_path)
         cmd = [self.cmd_script, self.cmd_param, self.dir_name, test_path]
+        self.logger.debug("[SEOJI] cmd" + str(cmd))
         command_output = self.run_command(cmd)
-        self.data['boot-result'] = 'failed' if self.errors else 'success'
+        # Nexell extension
+        self.logger.debug("[SEOJI] not save boot-result for test action.")
+        #self.data['boot-result'] = 'failed' if self.errors else 'success'
         return connection
 
 # Nexell extension
@@ -255,11 +267,13 @@ class WaitForAdbDeviceForNexell(Action):
                 
     def run(self, connection, args=None):
         connection = super(WaitForAdbDeviceForNexell, self).run(connection, args)
-        adb_cmd = ['/opt/android-sdk-linux/platform-tools/adb', 'start-server']
+        #adb_cmd = ['/opt/android-sdk-linux/platform-tools/adb', 'start-server']
+        adb_cmd = ['adb', 'start-server']
         serial_number = self.job.device['adb_serial_number']
         self.logger.debug("Starting adb daemon")
         self.run_command(adb_cmd)
-        adb_cmd = ['/opt/android-sdk-linux/platform-tools/adb', '-s', serial_number, 'wait-for-device']
+        #adb_cmd = ['/opt/android-sdk-linux/platform-tools/adb', '-s', serial_number, 'wait-for-device']
+        adb_cmd = ['adb', '-s', serial_number, 'wait-for-device']
         self.logger.debug("%s: Nexell Waiting for device", serial_number)
         self.run_command(adb_cmd)
         
@@ -454,10 +468,19 @@ class EnterFastbootAction(Action):
         command_output = self.parsed_command(fastboot_cmd)
         if command_output and fastboot_serial_number in command_output:
             self.logger.debug("Device is in fastboot: %s", command_output)
+            # Nexell extension
+            #fastboot_cmd = cmd_prefix + [
+                #'fastboot', '-s', fastboot_serial_number, 'reboot-bootloader'
+            #] + fastboot_opts
             fastboot_cmd = cmd_prefix + [
-                'fastboot', '-s', fastboot_serial_number, 'reboot-bootloader'
+                'fastboot', '-s', fastboot_serial_number, 'reboot'
             ] + fastboot_opts
+            self.logger.debug("[SEOJI] chage 'reboot-bootloader' to 'reboot' because of version issue.")
+            self.logger.debug("[SEOJI] fastboot_cmd:" + str(fastboot_cmd))
+
             command_output = self.parsed_command(fastboot_cmd)
+            self.logger.debug("[SEOJI] command_output: %s", command_output)
+            '''
             if command_output and 'okay' not in command_output.lower():
                 raise InfrastructureError("Unable to enter fastboot: %s" %
                                           command_output)
@@ -468,4 +491,11 @@ class EnterFastbootAction(Action):
                     self.results = {'status': lines[0].strip()}
                 else:
                     self.results = {'fail': self.name}
+            '''
+            lines = [status for status in command_output.split(
+                '\n') if 'finished' in status.lower()]
+            if lines:
+                self.results = {'status': lines[0].strip()}
+            else:
+                self.results = {'fail': self.name}
         return connection

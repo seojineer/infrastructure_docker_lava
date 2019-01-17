@@ -32,17 +32,18 @@ actions:
           url: /home/lava-slave/LAVA-TEST/
           dir_name: result-s5p4418-navi-ref-qt
           deploy_script: /home/lava/bin/nexell-lava-commands.sh
-          #deploy_command1: reboot-bootloader
-          #deploy_command2: fastboot-download
-          deploy_command1: test1
-          deploy_command2: test2
+          deploy_command1: reboot-bootloader
+          deploy_command2: fastboot-download
+          #deploy_command1: test1
+          #deploy_command2: test2
           device_path: '/dev/ttyUSB0'
           afterdeploy_command1: 'False'
           afterdeploy_command2: 'False'
           test: nothing
       os: oe
   - boot:
-      namespace: s5p4418-deploy
+      namespace: s5p4418-boot
+      connection: serial
       method: fastboot
       prompts:
       - 'root@s5p4418-navi-ref:~#'
@@ -57,33 +58,19 @@ actions:
           command: /home/lava/bin/nexell-lava-commands.sh
           dir_name: result-s5p4418-navi-ref-qt
           command_param: boot
+          #command_param: uboot-serial
           command_param2: enter
           device_path: '/dev/ttyUSB0'
   - test:
       namespace: s5p4418-deploy
+      connection-namespace: s5p4418-boot
       connection: serial
       timeout:
         minutes: 3
       failure_retry: 3
-      name: s5p4418-navi-boot-test
+      name: s5p4418-navi-qt-test
       definitions:
-          - repository:
-              metadata:
-                  format: Lava-Test Test Definition 1.0
-                  name: boot-tests-pass-check
-                  description: "xxxxxxx nexell"
-                  os:
-                      - oe
-                  scope:
-                      - functional
-                  devices:
-                      - s5p4418-navi-ref-qt
-              run:
-                  steps:
-                      - echo "test1:" "pass"
-                      #- lava-test-case linux-INLINE-pwd --shell pwd
-                      #- lava-test-case linux-INLINE-uname --shell uname -a
-                      #- lava-test-case linux-INLINE-vmstat --shell vmstat
-            from: inline
-            name: boot-test-pass-inline
-            path: file://opt/share/lavatest/s5p4418-navi-simple-test.yaml
+          - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
+            from: git
+            path: lava-test-shell/smoke-tests-basic.yaml
+            name: smoke-tests
