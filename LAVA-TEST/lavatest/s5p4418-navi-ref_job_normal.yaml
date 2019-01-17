@@ -1,5 +1,7 @@
-device_type: s5p4418-navi-type
-job_name: s5p4418-navi-ref-deploy-test
+device_type: s5p4418-navi-ref-type
+job_name: s5p4418-navi-ref-all-pass
+tags:
+  - s5p4418-navi-ref
 timeouts:
   job:
     minutes: 60
@@ -40,7 +42,8 @@ actions:
           test: nothing
       os: oe
   - boot:
-      namespace: s5p4418-deploy
+      namespace: s5p4418-boot
+      connection: serial
       method: fastboot
       prompts:
       - 'navi_ref:/'
@@ -50,13 +53,23 @@ actions:
       parameters:
         shutdown-message: "reboot: Restarting system"
       timeout:
-        minutes: 15
-      method: fastboot
+        minutes: 10
       nexell_ext:
           command: /home/lava/bin/nexell-lava-commands.sh
           dir_name: result-s5p4418-navi_ref
-          #command_param: boot-on-uboot
-          #command_param: uboot-serial
           command_param: boot
           command_param2: enter
           device_path: '/dev/ttyUSB0'
+  - test:
+      namespace: s5p4418-deploy
+      connection-namespace: s5p4418-boot
+      connection: serial
+      timeout:
+        minutes: 3
+      failure_retry: 3
+      name: s5p4418-navi-qt-test
+      definitions:
+          - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
+            from: git
+            path: lava-test-shell/smoke-tests-basic.yaml
+            name: smoke-tests

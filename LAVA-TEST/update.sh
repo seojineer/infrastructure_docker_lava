@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/bin/bash 
 #
 # Copyright (C) 2015 The Android Open-Source Project
 #
@@ -21,7 +20,8 @@
 set -e
 SERIAL=$1
 DEVICE_PATH=$2
-echo $SERIAL
+echo "SERIAL: $SERIAL"
+echo -e "DEVICE_PATH: $DEVICE_PATH\n"
 
 function parse_partmap()
 {
@@ -68,18 +68,20 @@ function get_partname_by_image()
 }
 
 PARTS=$(parse_partmap)
+echo -e "PARTS: \n$PARTS\n"
 
 sudo fastboot flash partmap partmap.txt -s $SERIAL
-echo -n $'\cc' > $DEVICE_PATH
-echo "fast 0" > $DEVICE_PATH
 
 if [ $# -lt 4 ]; then
+	echo -e "fuse all\n"
 	# fuse all
 	for part in ${PARTS}; do
+		echo "part: $part"
 		name=$(get_part_name ${part})
 		image=$(get_part_image ${part})
-		# echo "${name} ==> ${image}"
+		echo "${name} ==> ${image}"
 		test -f ${image} && sudo fastboot flash ${name} ${image} -s $SERIAL
+		sleep 4
 		echo -n $'\cc' > $DEVICE_PATH
 		echo "fast 0" > $DEVICE_PATH
 

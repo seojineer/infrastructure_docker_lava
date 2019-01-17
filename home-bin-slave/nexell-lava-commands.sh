@@ -18,30 +18,31 @@ function run_command()
 	echo $command
 
     if [ "$command" == "reboot-bootloader" ]; then
-		echo " " > "${DEVICE_PATH}"; sleep 1
-		echo " " > "${DEVICE_PATH}"; sleep 1
+
+	# android
+	if [ "$path" == "result-s5p4418-navi_ref" ] || [ "$path" == "result-clova" ] || [ "$path" == "result-s5p4418-navi_ref_quickboot" ] || [ "$path" == "result-s5p4418-avn_ref" ] || [ "$path" == "result-s5p4418-avn_ref_quickboot" ] || [ "$path" == "result-s5p6818-avn_ref" ] || [ "$path" == "result-s5p6818-avn_ref_quickboot" ]; then
+		echo "android"
+		cp /opt/share/update.sh /opt/share/$path/
+		#/opt/share/$path/boot_by_usb.sh
+	# yocto
+	else
+		echo "yocto"
+		cp /opt/share/standalone-fastboot-download.sh /opt/share/$path/tools/standalone-fastboot-download.sh
+		#/opt/share/$path/tools/standalone-uboot-by-usb-download.sh
+	fi
+
+	echo " " > "${DEVICE_PATH}"; sleep 1
+	echo " " > "${DEVICE_PATH}"; sleep 1
         echo "root" > "${DEVICE_PATH}"; sleep 3
         echo "root" > "${DEVICE_PATH}"; sleep 3
-        echo "reboot" > "${DEVICE_PATH}"; sleep 10
 
-		# android
-		if [ "$path" == "result-s5p4418-navi_ref" ] || [ "$path" == "result-clova" ] || [ "$path" == "result-s5p4418-navi_ref_quickboot" ] || [ "$path" == "result-s5p4418-avn_ref" ] || [ "$path" == "result-s5p4418-avn_ref_quickboot" ] || [ "$path" == "result-s5p6818-avn_ref" ] || [ "$path" == "result-s5p6818-avn_ref_quickboot" ]; then
-			echo "android"
-			cp /opt/share/update.sh /opt/share/$path/
-			cd /opt/share/$path
+        for ((i=0;i<100;i++)); do
+            echo " " > "${DEVICE_PATH}"
+        done
 
-			/opt/share/$path/boot_by_usb.sh
+        echo "reboot" > "${DEVICE_PATH}"
 
-		# yocto
-		else
-			echo "yocto"
-			#cp /opt/share/standalone-fastboot-download.sh /opt/share/$path/tools/standalone-fastboot-download.sh
-			/opt/share/$path/tools/standalone-uboot-by-usb-download.sh
-
-			echo "yocto uboot" >> /opt/share/log.txt
-		fi
-
-        for ((i=0;i<1000;i++)); do
+        for ((i=0;i<500;i++)); do
             echo " " > "${DEVICE_PATH}"
         done
 
@@ -103,8 +104,7 @@ function run_command()
 		echo "OKAY"
         echo "======================================="
         echo "Success, reset after fastboot download!"
-        echo "======================================="
-
+        echo "=======================================" 
     elif [ "$command" == 'run-uboot-by-usb' ]; then
         run_uboot_by_usb_download $path
 
@@ -181,10 +181,13 @@ function run_command()
 	echo " " > "${DEVICE_PATH}"; sleep 5
         echo "boot" > "${DEVICE_PATH}"; sleep 15
 
-    elif [ "$command" == 'boot2' ]; then
-    	echo "reset" > "${DEVICE_PATH}"; sleep 3
-	cd /opt/share/$path
-	/opt/share/$path/boot_by_usb.sh $path
+    elif [ "$command" == 'boot-android-change-serial' ]; then
+
+	# change fastboot serial number 
+	echo "setenv bootargs "console=ttyAMA3,115200n8 loglevel=7 printk.time=1 androidboot.hardware=navi_ref androidboot.console=ttyAMA3 androidboot.serialno=${path:7} quiet"" > "${DEVICE_PATH}"; sleep 5
+	echo " " > "${DEVICE_PATH}"
+	echo 'setenv bootargs "console=ttyAMA3,115200n8 loglevel=7 printk.time=1 androidboot.hardware=navi_ref androidboot.console=ttyAMA3 androidboot.serialno=${path:7} quiet"' > "${DEVICE_PATH}"; sleep 5
+        echo "boot" > "${DEVICE_PATH}"; sleep 15
 
     elif [ "$command" == 'boot3' ]; then
     	echo "reset" > "${DEVICE_PATH}"; sleep 3
