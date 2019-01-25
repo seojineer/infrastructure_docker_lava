@@ -717,8 +717,10 @@ class ApplyNexellOverlay(Action):
         self.logger.debug("SUKER: apply_overlay.py: " + str(adb_cmd))        
         command_output = self.run_command(adb_cmd)
 
-        adb_cmd = ['adb', '-s', adb_serial_number, 'push', fname, lava_test_results_dir+'/bin/']
-        self.logger.debug("SUKER: apply_overlay.py: " + str(adb_cmd))
+        # lava-test-runner script must be located at lava_test_results_dir. 
+        # android device use '/data/local/tmp/lava-job_number/bin/lava-test-runner'.
+        adb_cmd = ['adb', '-s', adb_serial_number, 'push', nexell_real_path, lava_test_results_dir]
+        self.logger.debug("SUKER: apply_overlay.py: " + str(adb_cmd))        
         command_output = self.run_command(adb_cmd)
         return connection
 

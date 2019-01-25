@@ -272,7 +272,10 @@ class WaitForAdbDeviceForNexell(Action):
         serial_number = self.job.device['adb_serial_number']
         self.logger.debug("Starting adb daemon")
         self.run_command(adb_cmd)
-        #adb_cmd = ['/opt/android-sdk-linux/platform-tools/adb', '-s', serial_number, 'wait-for-device']
+
+        adb_cmd = ['adb', 'root']
+        self.run_command(adb_cmd)
+
         adb_cmd = ['adb', '-s', serial_number, 'wait-for-device']
         self.logger.debug("%s: Nexell Waiting for device", serial_number)
         self.run_command(adb_cmd)

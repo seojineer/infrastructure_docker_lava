@@ -2,7 +2,7 @@ FROM lavasoftware/amd64-lava-server:2018.11
 
 RUN apt-get install -y vim lavacli
 
-#RUN mkdir -p /home/lava
+RUN mkdir -p /root/.config
 
 COPY ./home-bin-server /home/lava/bin
 COPY ./home /home
@@ -13,4 +13,4 @@ COPY ./etc /etc
 
 #RUN mkdir -p /var/lib/nexell
 
-EXPOSE 69 80 5555 5556 5432 8000
+EXPOSE 69 80 5555 5556 5432 8000 5500
