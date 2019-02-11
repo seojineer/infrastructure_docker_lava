@@ -1,0 +1,6 @@
+{# device_type: s5p4418-convergence-svmc-type #}
+{% extends 'base-fastboot.jinja2' %}
+{% set console_device = console_devie | default('ttyUSB0') %}
+{% set root_device = root_device | default('/dev/ttyUSB0') %}
+{% set device_path = device_path | default([]) %}
+device_path: {{ device_path|default([]) }}

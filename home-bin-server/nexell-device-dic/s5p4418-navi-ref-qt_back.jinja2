@@ -1,0 +1,8 @@
+{% extends 's5p4418-navi-qt-type.jinja2' %}
+{% set nexell_command = 'true' %}
+{% set connection_command = 'telnet 192.168.1.44 4001' %}
+{% set device_path = '/dev/ttyUSB0' %}
+{% set root_device = '/dev/ttyUSB0' %}
+{% set adb_serial_number = 's5p4418-navi-ref-qt' %}
+{% set fastboot_serial_number = 's5p4418-navi-ref-qt' %}
+{% set fastboot_sequence = ['boot', 'reboot', 'no-flash-boot', 'auto-login', 'overlay-unpack', 'shell-session', 'export-env'] %}
