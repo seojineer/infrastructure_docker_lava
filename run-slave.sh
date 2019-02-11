@@ -4,6 +4,16 @@ docker run -it --name new_lava_slave \
        -v /boot:/boot -v /lib/modules:/lib/modules -v /home/lava-slave/LAVA-TEST:/opt/share \
        -v /dev/bus/usb:/dev/bus/usb -v ~/.ssh/id_rsa_lava.pub:/home/lava/.ssh/authorized_keys:ro -v /sys/fs/cgroup:/sys/fs/cgroup \
        --device=/dev/ttyUSB0 \
+       --device=/dev/ttyUSB1 \
+       --device=/dev/ttyUSB2 \
+       --device=/dev/ttyUSB3 \
+	   --device=/dev/ttyUSB4 \
+       --device=/dev/ttyUSB5 \
+       --device=/dev/ttyUSB6 \
+       --device=/dev/ttyUSB7 \
+       --device=/dev/ttyUSB8 \
+       --device=/dev/ttyUSB9 \
+       --device=/dev/ttyUSB10 \
        -p 2022:22 -p 5555:5555 -p 5556:5556 \
        -h new_lava_slave \
        --privileged \

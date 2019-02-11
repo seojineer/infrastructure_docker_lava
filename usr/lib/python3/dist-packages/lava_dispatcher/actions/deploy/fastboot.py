@@ -34,13 +34,22 @@ from lava_dispatcher.actions.deploy.apply_overlay import (
     ApplyOverlaySparseImage,
     ApplyOverlayImage,
 )
-from lava_dispatcher.actions.deploy.download import DownloaderAction
+from lava_dispatcher.actions.deploy.download import (
+    DownloaderAction,
+    HttpDownloadAction,
+)
 from lava_dispatcher.utils.filesystem import copy_to_lxc
 from lava_dispatcher.utils.lxc import is_lxc_requested, lxc_cmd_prefix
 from lava_dispatcher.actions.boot.fastboot import EnterFastbootAction
 from lava_dispatcher.actions.boot.u_boot import UBootEnterFastbootAction
 from lava_dispatcher.power import PDUReboot, ReadFeedback
-
+# Nexell extension
+from lava_dispatcher.actions.deploy.apply_overlay import ApplyNexellOverlay
+import urllib.parse as lavaurl
+from lava_dispatcher.utils.compression import (
+    compress_file,
+    decompress_file,
+)
 
 # pylint: disable=too-many-return-statements,too-many-instance-attributes,missing-docstring
 
@@ -112,11 +121,19 @@ class FastbootAction(DeployAction):  # pylint:disable=too-many-instance-attribut
             self.internal_pipeline.add_action(ResetDevice())
         elif 'nexell_ext' in image_keys:
             # Nexell extension
+            self.internal_pipeline.add_action(OverlayAction())
+
+            # download build result
+            self.logger.debug("[SEOJI] url:" + str(parameters['images']['nexell_ext']['url']))
+            if 'url' in parameters['images']['nexell_ext']:
+                self.path = '/home/lava-slave/LAVA-TEST'
+                self.internal_pipeline.add_action(DownloaderAction('nexell_ext', self.path))
+                #if 'compression' in parameters['images']['nexell_ext]:
+                   #self.logger.debug("[SEOJI] yes compression param exist") 
+                    
+
             self.logger.debug("SUKER: parameters in deploy/fastboot.py : " + str(parameters))
             self.internal_pipeline.add_action(EnterNexellFastbootAction(parameters,'deploy_script','deploy_command1','dir_name'))
-            # should use this Action instead of Nexell extension connect function
-            #self.internal_pipeline.add_action(ConnectDevice())
-            self.logger.debug("[SEOJI] add_action(ApplyNexellDeployAction)")
             self.internal_pipeline.add_action(ApplyNexellDeployAction(parameters,'deploy_script','deploy_command2','dir_name'))
         else:
             self.internal_pipeline.add_action(EnterFastbootAction())
@@ -125,7 +142,8 @@ class FastbootAction(DeployAction):  # pylint:disable=too-many-instance-attribut
         image_keys = sorted(parameters['images'].keys())
         # Nexell extension
         if 'nexell_ext' in image_keys:
-            self.logger.debug("[SEOJI] pass adding DownladerAction")
+            self.logger.debug("[SEOJI] pass adding DownloaderAction")
+            #self.internal_pipeline.add_action(DeployDeviceEnvironment())
         else:
             for image in image_keys:
                 if image != 'yaml_line':
@@ -143,6 +161,24 @@ class FastbootAction(DeployAction):  # pylint:disable=too-many-instance-attribut
                         self.internal_pipeline.add_action(
                             DeployDeviceEnvironment())
             self.internal_pipeline.add_action(FastbootFlashOrderAction())
+        '''
+        for image in image_keys:
+            if image != 'yaml_line':
+                self.internal_pipeline.add_action(DownloaderAction(image, fastboot_dir))
+                if parameters['images'][image].get('apply-overlay', False):
+                    if self.test_needs_overlay(parameters):
+                        if parameters['images'][image].get('sparse', True):
+                            self.internal_pipeline.add_action(
+                                ApplyOverlaySparseImage(image))
+                        else:
+                            self.internal_pipeline.add_action(
+                                ApplyOverlayImage(image, use_root_partition=False))
+                if self.test_needs_overlay(parameters) and \
+                   self.test_needs_deployment(parameters):
+                    self.internal_pipeline.add_action(
+                        DeployDeviceEnvironment())
+        self.internal_pipeline.add_action(FastbootFlashOrderAction())
+        '''
 
 class EnterNexellFastbootAction(DeployAction):
     """
@@ -168,8 +204,6 @@ class EnterNexellFastbootAction(DeployAction):
         connection = super(EnterNexellFastbootAction, self).run(connection, args)        
         self.logger.debug("[SEOJI] param1: %s, param2: %s", self.param1, self.param2)
         self.logger.debug("[SEOJI] param: %s", self.job.device)
-        #test_path = self.job.device['device_path']
-        # get param from job file
         test_path = self.device_path
         self.logger.debug("test_path:%s",test_path)
         telnet_cmd = [self.cmd, self.param1, self.param2, test_path]
@@ -201,9 +235,7 @@ class ApplyNexellDeployAction(DeployAction):
         
     def run(self, connection, args=None):
         connection = super(ApplyNexellDeployAction, self).run(connection, args)
-        self.logger.debug("[SEOJI] device param: %s", self.job.device)
         #test_path = self.job.device['device_path']
-        # get param from job file
         test_path = self.device_path
         self.logger.debug("test_path:%s",test_path)
         fastboot_cmd = [self.cmd_script, self.cmd_param1, self.cmd_param2, test_path]

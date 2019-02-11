@@ -38,6 +38,10 @@ from lava_common.constants import (
     UBOOT_DEFAULT_HEADER_LENGTH,
     DISPATCHER_DOWNLOAD_DIR,
 )
+from lava_dispatcher.test.utils import (
+    infrastructure_error,
+    infrastructure_error_multi_paths,
+)
 from lava_dispatcher.actions.deploy.overlay import OverlayAction
 from lava_dispatcher.utils.contextmanager import chdir
 from lava_dispatcher.utils.installers import (
@@ -666,7 +670,7 @@ class ApplyNexellOverlay(Action):
         self.summary = "apply overlay on the container"
         self.description = "apply the overlay to the container by copying"
         self.lava_test_dir = os.path.realpath(
-            '%s/../../../pipeline/lava_test_shell' % os.path.dirname(__file__))
+            '%s/../../lava_test_shell' % os.path.dirname(__file__))
         self.scripts_to_copy = ['lava-test-runner']
 
     def validate(self):
@@ -675,13 +679,14 @@ class ApplyNexellOverlay(Action):
 
     def run(self, connection, args=None):
         connection = super(ApplyNexellOverlay, self).run(connection, args)
-        overlay_file = self.data['compress-overlay'].get('output')
+        keys = [key for key in self.data]
+        #self.logger.debug("[SEOJI] keys:" + str(keys[0]))
+        overlay_file = self.data[keys[0]]['compress-overlay'].get('output').get('file')
         adb_serial_number = self.job.device['adb_serial_number']
         self.logger.debug("SUKER: deploy/apply_overlay.py: "+str(adb_serial_number))
         if overlay_file is None:
             self.logger.debug("skipped %s", self.name)
-            self.logger.debug("[SEOJI] skipped %s", self.name)
-            #return connection
+            return connection
         nexell_path = os.path.join(NEXELL_PATH)
         if not os.path.exists(nexell_path):
             raise JobError("Nexell path not found")
@@ -702,18 +707,21 @@ class ApplyNexellOverlay(Action):
         self.logger.debug("SUKER: deploy/apply_overlay.py output_file: "+str(output_file))
         self.logger.debug("SUKER: deploy/apply_overlay.py nexell_path: "+str(nexell_path))
         
-        lava_test_results_dir = self.data['lava_test_results_dir']
+        lava_test_results_dir = self.data[keys[0]]['test']['results']['lava_test_results_dir']
         self.logger.debug("SUKER: deploy/apply_overlay.py var/lib/nexell path: "+str(lava_test_results_dir))
 
         # adb push
         nexell_real_path = nexell_path + lava_test_results_dir
-        adb_cmd = ['/opt/android-sdk-linux/platform-tools/adb', '-s', adb_serial_number, 'push', nexell_real_path, '/']
+        adb_cmd = ['adb', '-s', adb_serial_number, 'push', nexell_real_path, '/']
         self.logger.debug("SUKER: apply_overlay.py: " + str(adb_cmd))        
         command_output = self.run_command(adb_cmd)
 
-        adb_cmd = ['/opt/android-sdk-linux/platform-tools/adb', '-s', adb_serial_number, 'push', fname, lava_test_results_dir+'/bin/']
-        self.logger.debug("SUKER: apply_overlay.py: " + str(adb_cmd))
+        # lava-test-runner script must be located at lava_test_results_dir. 
+        # android device use '/data/local/tmp/lava-job_number/bin/lava-test-runner'.
+        adb_cmd = ['adb', '-s', adb_serial_number, 'push', nexell_real_path, lava_test_results_dir]
+        self.logger.debug("SUKER: apply_overlay.py: " + str(adb_cmd))        
         command_output = self.run_command(adb_cmd)
+        
         return connection
 
 
