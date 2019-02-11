@@ -71,7 +71,6 @@ PARTS=$(parse_partmap)
 echo -e "PARTS: \n$PARTS\n"
 
 sudo fastboot flash partmap partmap.txt -s $SERIAL
-sleep 4
 
 if [ $# -lt 4 ]; then
 	echo -e "fuse all\n"
@@ -82,6 +81,7 @@ if [ $# -lt 4 ]; then
 		image=$(get_part_image ${part})
 		echo "${name} ==> ${image}"
 		test -f ${image} && sudo fastboot flash ${name} ${image} -s $SERIAL
+		sleep 4
 		echo -n $'\cc' > $DEVICE_PATH
 		echo "fast 0" > $DEVICE_PATH
 		sleep 4

@@ -45,11 +45,6 @@ from lava_dispatcher.actions.boot.u_boot import UBootEnterFastbootAction
 from lava_dispatcher.power import PDUReboot, ReadFeedback
 # Nexell extension
 from lava_dispatcher.actions.deploy.apply_overlay import ApplyNexellOverlay
-import urllib.parse as lavaurl
-from lava_dispatcher.utils.compression import (
-    compress_file,
-    decompress_file,
-)
 
 # pylint: disable=too-many-return-statements,too-many-instance-attributes,missing-docstring
 
@@ -122,16 +117,6 @@ class FastbootAction(DeployAction):  # pylint:disable=too-many-instance-attribut
         elif 'nexell_ext' in image_keys:
             # Nexell extension
             self.internal_pipeline.add_action(OverlayAction())
-
-            # download build result
-            self.logger.debug("[SEOJI] url:" + str(parameters['images']['nexell_ext']['url']))
-            if 'url' in parameters['images']['nexell_ext']:
-                self.path = '/home/lava-slave/LAVA-TEST'
-                self.internal_pipeline.add_action(DownloaderAction('nexell_ext', self.path))
-                #if 'compression' in parameters['images']['nexell_ext]:
-                   #self.logger.debug("[SEOJI] yes compression param exist") 
-                    
-
             self.logger.debug("SUKER: parameters in deploy/fastboot.py : " + str(parameters))
             self.internal_pipeline.add_action(EnterNexellFastbootAction(parameters,'deploy_script','deploy_command1','dir_name'))
             self.internal_pipeline.add_action(ApplyNexellDeployAction(parameters,'deploy_script','deploy_command2','dir_name'))
