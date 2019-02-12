@@ -140,10 +140,15 @@ class ConnectNexell(Action):
             else:
                 self.logger.debug("device_path is None")
 
-        cmd = str(self.parameters['nexell_ext']['cmd']) + ' ' + str(self.parameters['nexell_ext']['param'])
-        self.logger.info("%s Connecting to device using '%s'", self.name, cmd)
-        signal.alarm(0)  # clear the timeouts used without connections.
+        #cmd = str(self.parameters['nexell_ext']['cmd']) + ' ' + str(self.parameters['nexell_ext']['param'])
+        #self.logger.info("%s Connecting to device using '%s'", self.name, cmd)
+        #signal.alarm(0)  # clear the timeouts used without connections.
+
         # ShellCommand executes the connection command
+        #cmd = 'ssh 127.0.0.1'
+        cmd = ['ssh', '127.0.0.1']
+        cmd = ' '.join(cmd)
+        self.logger.debug("[SEOJI] cmd: " + str(cmd))
         shell = self.shell_class("%s\n" % cmd, self.timeout,
                                  logger=self.logger)
         if shell.exitstatus:
@@ -155,6 +160,11 @@ class ConnectNexell(Action):
         connection.connected = True
         connection = super(ConnectNexell, self).run(connection, args)
         connection.prompt_str = self.parameters['prompts']
-        self.data['boot-result'] = 'failed' if self.errors else 'success'
+        self.logger.debug("[SEOJI] prompts: " + str(connection.prompt_str))
+        # Nexell extension
+        self.logger.debug("[SEOJI] not save boot-result for test action.")
+        #self.data['boot-result'] = 'failed' if self.errors else 'success'
+        self.set_namespace_data(action='shared', label='shared', key='connection', value=connection)
+        self.logger.debug("[SEOJI] lxc connection: " + str(connection))
         return connection
 
