@@ -29,18 +29,21 @@ actions:
       to: fastboot
       images:
         nexell_ext:
-          url: /home/lava-slave/LAVA-TEST/
+          url: http://confluence.nexell.co.kr:8080/s5p4418/android/nougat/result-navi_ref-2019-02-05.tar.gz
+          #compression: gz
+          archive: tar
           dir_name: result-s5p4418-navi_ref
           deploy_script: /home/lava/bin/nexell-lava-commands.sh
-          deploy_command1: reboot-bootloader
-          deploy_command2: fastboot-download
-          #deploy_command1: test1
-          #deploy_command2: test2
+          #deploy_command1: reboot-bootloader
+          #deploy_command2: fastboot-download
+          deploy_command1: test1
+          deploy_command2: test2
           device_path: '/dev/ttyUSB0'
           afterdeploy_command1: 'False'
           afterdeploy_command2: 'False'
           test: nothing
-      os: oe
+      os: android
+
   - boot:
       namespace: s5p4418-boot
       connection: serial
@@ -57,6 +60,7 @@ actions:
       nexell_ext:
           command: /home/lava/bin/nexell-lava-commands.sh
           dir_name: result-s5p4418-navi_ref
+          #command_param: boot-android-change-serial
           command_param: boot
           command_param2: enter
           device_path: '/dev/ttyUSB0'
@@ -67,9 +71,13 @@ actions:
       timeout:
         minutes: 3
       failure_retry: 3
-      name: s5p4418-navi-qt-test
+      name: s5p4418-navi-ref-test
       definitions:
           - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
             from: git
             path: lava-test-shell/smoke-tests-basic.yaml
             name: smoke-tests
+          #- repository: https://github.com/seojineer/test-definition.git
+            #from: git
+            #path: automated/android/apk-automation/apk-automation.yaml
+            #name: antutu-video-test

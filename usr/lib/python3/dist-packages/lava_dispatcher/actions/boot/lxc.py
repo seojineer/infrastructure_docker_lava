@@ -77,8 +77,8 @@ class BootLxcAction(BootAction):
             self.internal_pipeline.add_action(NexellStartAction())
             self.internal_pipeline.add_action(ConnectNexell())
             #self.internal_pipeline.add_action(AutoLoginAction())
-            #self.internal_pipeline.add_action(ExpectShellSession())
-            #self.internal_pipeline.add_action(ExportDeviceEnvironment())
+            self.internal_pipeline.add_action(ExpectShellSession())
+            self.internal_pipeline.add_action(ExportDeviceEnvironment())
         else:
             self.internal_pipeline.add_action(LxcStartAction())
             self.internal_pipeline.add_action(LxcAddStaticDevices())

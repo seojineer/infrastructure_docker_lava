@@ -121,7 +121,7 @@ class FastbootAction(DeployAction):  # pylint:disable=too-many-instance-attribut
             self.internal_pipeline.add_action(ResetDevice())
         elif 'nexell_ext' in image_keys:
             # Nexell extension
-            self.internal_pipeline.add_action(OverlayAction())
+            #self.internal_pipeline.add_action(OverlayAction())
 
             # download build result
             self.logger.debug("[SEOJI] url:" + str(parameters['images']['nexell_ext']['url']))

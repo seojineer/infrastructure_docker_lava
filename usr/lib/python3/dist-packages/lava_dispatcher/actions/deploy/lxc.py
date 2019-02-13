@@ -29,7 +29,10 @@ from lava_dispatcher.action import (
 )
 from lava_dispatcher.actions.deploy import DeployAction
 from lava_dispatcher.actions.deploy.overlay import OverlayAction
-from lava_dispatcher.actions.deploy.apply_overlay import ApplyLxcOverlay
+from lava_dispatcher.actions.deploy.apply_overlay import (
+    ApplyLxcOverlay,
+    ApplyNexellLxcOverlay,
+)
 from lava_dispatcher.actions.deploy.environment import DeployDeviceEnvironment
 from lava_dispatcher.actions.boot.lxc import (
     LxcStartAction,
@@ -107,11 +110,13 @@ class LxcAction(DeployAction):  # pylint:disable=too-many-instance-attributes
     def populate(self, parameters):
         self.internal_pipeline = Pipeline(parent=self, job=self.job,
                                           parameters=parameters)
-        '''
+        self.logger.debug("[SEOJI] deploy/lxc.py parameters: " + str(parameters))
+        self.logger.debug("[SEOJI] deploy/lxc.py parameters['nexell_ext]: " + str(parameters['nexell_ext']))
         if parameters['nexell_ext']:
             self.internal_pipeline.add_action(NexellCreateAction())
             self.internal_pipeline.add_action(OverlayAction())
-            self.internal_pipeline.add_action(ApplyNexellOverlay())
+            #self.internal_pipeline.add_action(ApplyNexellLxcOverlay)
+            self.internal_pipeline.add_action(ApplyNexellLxcOverlay(parameters['nexell_ext']))
         else :
             self.internal_pipeline.add_action(LxcCreateAction())
             self.internal_pipeline.add_action(LxcCreateUdevRuleAction())
@@ -126,6 +131,7 @@ class LxcAction(DeployAction):  # pylint:disable=too-many-instance-attributes
                 self.internal_pipeline.add_action(OverlayAction())
                 self.internal_pipeline.add_action(ApplyLxcOverlay())
         '''
+        # original code
         self.internal_pipeline.add_action(LxcCreateAction())
         self.internal_pipeline.add_action(LxcCreateUdevRuleAction())
         if 'packages' in parameters:
@@ -138,6 +144,7 @@ class LxcAction(DeployAction):  # pylint:disable=too-many-instance-attributes
         if self.test_needs_overlay(parameters):
             self.internal_pipeline.add_action(OverlayAction())
             self.internal_pipeline.add_action(ApplyLxcOverlay())
+        '''
 
 class NexellCreateAction(DeployAction):
     """
@@ -158,7 +165,7 @@ class NexellCreateAction(DeployAction):
 
     def run(self, connection, args=None):
         connection = super(NexellCreateAction, self).run(connection, args)
-        self.results = {'status': 'success'}
+        #self.results = {'status': 'success'}
         return connection
 
 class LxcCreateAction(DeployAction):

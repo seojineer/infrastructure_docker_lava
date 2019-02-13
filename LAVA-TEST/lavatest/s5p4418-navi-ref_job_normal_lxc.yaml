@@ -17,47 +17,27 @@ protocols:
     name: s5p4418-test
     template: debian
     distribution: debian
-    release: jessie
+    release: stretch
     arch: amd64
 
 actions:
   - deploy:
       namespace: s5p4418-lxc-dummy-deploy
       timeout:
-        minutes: 5
+        minutes: 10
       to: lxc
-      os: oe
+      os: debian
       nexell_ext: dummy
       
   - boot:
       namespace: s5p4418-lxc-dummy-boot
-      timeout:
-        minutes: 5
+      connection: ssh
       method: lxc
-      nexell_ext: dummy
-
-  - test:
-      namespace: s5p4418-lxc-dummy-test
+      prompts:
+      - 'root@new_lava_slave:~#'
       timeout:
-        minutes: 5
+        minutes: 10
       nexell_ext: dummy
-      connection-namespace: s5p4418-lxc-dummy-boot
-      definitions:
-          - repository:
-              metadata:
-                  format: Lava-Test Test Definition 1.0
-                  name: boot-tests-pass-check
-                  description: "xxxxxxx nexell"
-                  os:
-                      - debian
-              run:
-                  steps:
-                      - echo "test1:" "pass"
-              #parse:
-                  #pattern: "(?P<test_case_id>.*-*):\\s+(?P<result>(pass|fail))"
-            from: inline
-            name: boot-test-pass-inline
-            path: file://opt/share/helloworld_test/test-yaml/bsp/nexell-boot-check-qt.yaml
 
   - deploy:
       failure_retry: 3
@@ -67,7 +47,9 @@ actions:
       to: fastboot
       images:
         nexell_ext:
-          url: /home/lava-slave/LAVA-TEST/
+          url: http://confluence.nexell.co.kr:8080/s5p4418/android/nougat/result-navi_ref-2019-02-05.tar.gz
+          #compression: gz
+          archive: tar
           dir_name: result-s5p4418-navi_ref
           deploy_script: /home/lava/bin/nexell-lava-commands.sh
           #deploy_command1: reboot-bootloader
@@ -96,6 +78,7 @@ actions:
       nexell_ext:
           command: /home/lava/bin/nexell-lava-commands.sh
           dir_name: result-s5p4418-navi_ref
+          #command_param: boot-android-change-serial
           command_param: boot
           command_param2: enter
           device_path: '/dev/ttyUSB0'
@@ -112,19 +95,19 @@ actions:
             from: git
             path: lava-test-shell/smoke-tests-basic.yaml
             name: smoke-tests
-          #- repository: https://github.com/seojineer/test-definition.git
-            #from: git
-            #path: automated/android/apk-automation/apk-automation.yaml
-            #name: antutu-video-test
+
   - test:
-      namespace: s5p4418-lxc
+      namespace: s5p4418-lxc-dummy-deploy
+      connection-namespace: s5p4418-lxc-dummy-boot
       timeout:
-        minutes: 10
+        minutes: 20
       failure_retry: 3
+      nexell_ext: dummy
       definitions:
           - repository: https://github.com/seojineer/test-definition.git
             from: git
             path: automated/android/apk-automation/apk-automation.yaml
             name: antutu-nexell
             params:
-                TEST_NAME:antutu-nexell
+                TEST_NAME: antutu-nexell
+                LOOPS: 5
