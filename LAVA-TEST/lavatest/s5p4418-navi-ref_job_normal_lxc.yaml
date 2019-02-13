@@ -52,10 +52,10 @@ actions:
           archive: tar
           dir_name: result-s5p4418-navi_ref
           deploy_script: /home/lava/bin/nexell-lava-commands.sh
-          #deploy_command1: reboot-bootloader
-          #deploy_command2: fastboot-download
-          deploy_command1: test1
-          deploy_command2: test2
+          deploy_command1: reboot-bootloader
+          deploy_command2: fastboot-download
+          #deploy_command1: test1
+          #deploy_command2: test2
           device_path: '/dev/ttyUSB0'
           afterdeploy_command1: 'False'
           afterdeploy_command2: 'False'
@@ -78,8 +78,8 @@ actions:
       nexell_ext:
           command: /home/lava/bin/nexell-lava-commands.sh
           dir_name: result-s5p4418-navi_ref
-          #command_param: boot-android-change-serial
-          command_param: boot
+          command_param: boot-android-change-serial
+          #command_param: boot
           command_param2: enter
           device_path: '/dev/ttyUSB0'
   - test:
@@ -100,7 +100,7 @@ actions:
       namespace: s5p4418-lxc-dummy-deploy
       connection-namespace: s5p4418-lxc-dummy-boot
       timeout:
-        minutes: 20
+        minutes: 40
       failure_retry: 3
       nexell_ext: dummy
       definitions:
@@ -110,4 +110,4 @@ actions:
             name: antutu-nexell
             params:
                 TEST_NAME: antutu-nexell
-                LOOPS: 5
+                LOOPS: 1
