@@ -1,0 +1,111 @@
+device_type: s5p4418-navi-ref-type
+job_name: lava-test-s5p4418-navi-ref-android-nougat-weekly
+tags:
+  - s5p4418-navi-ref
+timeouts:
+  job:
+    minutes: 60
+  action:
+    minutes: 30
+  connection:
+    minutes: 20
+priority: medium
+visibility: public
+
+protocols:
+  lava-lxc:
+    name: s5p4418-test
+    template: debian
+    distribution: debian
+    release: stretch
+    arch: amd64
+
+actions:
+  - deploy:
+      namespace: s5p4418-lxc-dummy-deploy
+      timeout:
+        minutes: 10
+      to: lxc
+      os: debian
+      nexell_ext: dummy
+      
+  - boot:
+      namespace: s5p4418-lxc-dummy-boot
+      connection: ssh
+      method: lxc
+      prompts:
+      - 'root@new_lava_slave:'
+      timeout:
+        minutes: 10
+      nexell_ext: dummy
+
+  - deploy:
+      failure_retry: 3
+      namespace: s5p4418-deploy
+      timeout:
+        minutes: 10
+      to: fastboot
+      images:
+        nexell_ext:
+          url: http://192.168.1.25:8080/s5p4418/android/nougat/weekly/result-s5p4418-navi-ref-nougat-for-lava-test.tar.gz
+          archive: tar
+          dir_name: result-s5p4418-navi_ref
+          deploy_script: /home/lava/bin/nexell-lava-commands.sh
+          deploy_command1: reboot-bootloader
+          deploy_command2: fastboot-download
+          device_path: '/dev/ttyUSB0'
+          afterdeploy_command1: 'False'
+          afterdeploy_command2: 'False'
+          test: nothing
+      os: android
+
+  - boot:
+      namespace: s5p4418-boot
+      connection: serial
+      method: fastboot
+      prompts:
+      - 'navi_ref:/'
+      auto_login:
+        login_prompt: 's5p4418-navi-ref login:'
+        username: root
+      parameters:
+        shutdown-message: "reboot: Restarting system"
+      timeout:
+        minutes: 10
+      nexell_ext:
+          command: /home/lava/bin/nexell-lava-commands.sh
+          dir_name: result-s5p4418-navi_ref
+          command_param: boot-android-change-serial
+          #command_param: boot
+          command_param2: enter
+          command_param3: auto-login-cmd
+          device_path: '/dev/ttyUSB0'
+  - test:
+      namespace: s5p4418-deploy
+      connection-namespace: s5p4418-boot
+      connection: serial
+      timeout:
+        minutes: 3
+      failure_retry: 3
+      name: s5p4418-navi-ref-test
+      definitions:
+          - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
+            from: git
+            path: lava-test-shell/smoke-tests-basic.yaml
+            name: smoke-tests
+
+  - test:
+      namespace: s5p4418-lxc-dummy-deploy
+      connection-namespace: s5p4418-lxc-dummy-boot
+      timeout:
+        minutes: 40
+      #failure_retry: 3
+      nexell_ext: dummy
+      definitions:
+          - repository: https://github.com/seojineer/test-definition.git
+            from: git
+            path: automated/android/apk-automation/apk-automation.yaml
+            name: antutu-nexell
+            params:
+                TEST_NAME: antutu-nexell
+                LOOPS: 1

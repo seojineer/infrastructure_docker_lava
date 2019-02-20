@@ -9,6 +9,7 @@ COMMAND_TYPE=$1
 DOWNLOAD_DIR_NAME=$2
 #USB_BUS_NUM=$3
 DEVICE_PATH=$3
+PARTIAL=$4
 
 function run_command()
 {
@@ -18,23 +19,25 @@ function run_command()
 	echo $command
 
     if [ "$command" == "reboot-bootloader" ]; then
-	    echo "reboot" > "${DEVICE_PATH}"
+	    #echo "reboot" > "${DEVICE_PATH}"
 	    sleep 5
 
 	# android
 	if [ "$path" == "result-s5p4418-navi_ref" ] || [ "$path" == "result-clova" ] || [ "$path" == "result-s5p4418-navi_ref_quickboot" ] || [ "$path" == "result-s5p4418-avn_ref" ] || [ "$path" == "result-s5p4418-avn_ref_quickboot" ] || [ "$path" == "result-s5p6818-avn_ref" ] || [ "$path" == "result-s5p6818-avn_ref_quickboot" ]; then
-		echo "android"
+		#echo "android"
 		cp /opt/share/update.sh /opt/share/$path/
 
 		#echo "reboot" > "${DEVICE_PATH}"
 		#sleep 5
 
+		cd /opt/share/$path
+
 		for ((i=0;i<1000;i++)); do
 			echo " " > "${DEVICE_PATH}"
 		done
 
-		cd /opt/share/$path
-		/opt/share/$path/boot_by_usb.sh
+		#/opt/share/$path/boot_by_usb.sh
+		./boot_by_usb.sh
 
 		for ((i=0;i<1000;i++)); do
 			echo " " > "${DEVICE_PATH}"
@@ -52,14 +55,14 @@ function run_command()
 		echo "root" > "${DEVICE_PATH}"; sleep 3
 		echo "root" > "${DEVICE_PATH}"; sleep 3
 
-		for ((i=0;i<100;i++)); do
+		for ((i=0;i<1000;i++)); do
 			echo " " > "${DEVICE_PATH}"
 		done
 
 		/opt/share/$path/tools/standalone-uboot-by-usb-download.sh
 		#echo "reboot" > "${DEVICE_PATH}"
 
-		for ((i=0;i<500;i++)); do
+		for ((i=0;i<1000;i++)); do
 			echo " " > "${DEVICE_PATH}"
 		done
 
@@ -89,8 +92,14 @@ function run_command()
 		# yocto
 		else
 			echo "yocto"
-			sudo /opt/share/$path/tools/standalone-fastboot-download.sh ${path:7} ${DEVICE_PATH}
-			echo "/opt/share/$path/tools/standalone-fastboot-download.sh ${path:7} $DEVICE_PATH" >> /opt/share/log.txt
+			if [ $PARTIAL ]; then
+				# partial update
+				echo ${PARTIAL}
+				sudo /opt/share/$path/tools/standalone-fastboot-download.sh -s ${path:7} -d ${DEVICE_PATH} -t ${PARTIAL}
+			else
+				# fuse all
+				sudo /opt/share/$path/tools/standalone-fastboot-download.sh -s ${path:7} -d ${DEVICE_PATH}
+			fi
 		fi
 
         sleep 3
@@ -164,11 +173,13 @@ function run_command()
 		
 		# android
 		if [ "$path" == "result-navi_ref" ] || [ "$path" == "result-clova" ] || [ "$path" == "result-navi_ref_quickboot" ] || [ "$path" == "result-s5p4418-avn_ref" ] || [ "$path" == "result-s5p4418-avn_ref_quickboot" ] || [ "$path" == "result-s5p6818-avn_ref" ] || [ "$path" == "result-s5p6818-avn_ref_quickboot" ]; then
-			/opt/share/$path/boot_by_usb.sh
+			cd /opt/share/$path
+			./boot_by_usb.sh
 
 		# yocto
 		else
-        	/opt/share/$path/tools/standalone-uboot-by-usb-download.sh
+			cd /opt/share/$path
+        		./tools/standalone-uboot-by-usb-download.sh
 		fi
 
         for ((i=0;i<10;i++)); do
@@ -200,6 +211,12 @@ function run_command()
     elif [ "$command" == 'boot' ]; then
 	echo " " > "${DEVICE_PATH}"; sleep 5
         echo "boot" > "${DEVICE_PATH}"; sleep 15
+
+    elif [ "$command" == 'dummy1' ]; then
+		echo "dummuy1"
+
+    elif [ "$command" == 'dummy2' ]; then
+		echo "dummuy2"
 
     elif [ "$command" == 'boot-android-change-serial' ]; then
 	sleep 10
@@ -233,7 +250,11 @@ function run_command()
 
 		if [ "$j" -eq "1" ]; then
 			# remount as read-write filesystem
-			sleep 10
+			sleep  20
+			adb shell settings put global stay_on_while_plugged_in 3
+			sleep 5
+			adb shell input swipe 817 500 817 300
+			sleep 5
 			echo "su" > "${DEVICE_PATH}"
 			echo "mount -o rw,remount rootfs /" > "${DEVICE_PATH}"
 			break
@@ -245,12 +266,14 @@ function run_command()
 
     elif [ "$command" == 'boot-yocto' ]; then
     	echo "reset" > "${DEVICE_PATH}"; sleep 3
+	
+	cd /opt/share/$path
 
 	for ((i=0;i<1000;i++)); do
 		echo " " > "${DEVICE_PATH}"
 	done
 
-	/opt/share/$path/tools/standalone-uboot-by-usb-download.sh
+	./tools/standalone-uboot-by-usb-download.sh
 	#echo "reboot" > "${DEVICE_PATH}"
 
 	for ((i=0;i<1000;i++)); do
@@ -268,7 +291,37 @@ function run_command()
 
     elif [ "$command" == 'boot3' ]; then
     	echo "reset" > "${DEVICE_PATH}"; sleep 3
-	/opt/share/$path/tools/standalone-uboot-by-usb-download.sh
+	cd /opt/share/$path
+	./tools/standalone-uboot-by-usb-download.sh
+
+    elif [ "$command" == 'yocto-uboot-serial' ]; then
+    	echo "reset" > "${DEVICE_PATH}"; sleep 3
+
+		for ((i=0;i<1000;i++)); do
+			echo " " > "${DEVICE_PATH}"
+		done
+
+		/opt/share/$path/tools/standalone-uboot-by-usb-download.sh
+
+		for ((i=0;i<1000;i++)); do
+			echo " " > "${DEVICE_PATH}"
+		done
+
+		# change fastboot serial number 
+		echo "setenv serial# ${path:7}" > "${DEVICE_PATH}"; sleep 5
+		echo " " > "${DEVICE_PATH}"
+		echo "setenv serial# ${path:7}" > "${DEVICE_PATH}"; sleep 5
+
+        echo "boot" > "${DEVICE_PATH}"; sleep 20
+
+    elif [ "$command" == 'auto-login-cmd' ]; then
+    	sleep 3
+    	echo " " > "${DEVICE_PATH}"; sleep 3
+    	echo " " > "${DEVICE_PATH}"; sleep 3
+
+    elif [ "$command" == 'start-adbd' ]; then
+    	sleep 3
+		echo "sudo /usr/bin/start_adbd.sh" > "${DEVICE_PATH}"; sleep 3
 
     else
         echo "finished"

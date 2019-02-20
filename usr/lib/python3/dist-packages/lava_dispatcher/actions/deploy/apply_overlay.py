@@ -684,6 +684,7 @@ class ApplyNexellOverlay(Action):
         self.logger.debug("[SEOJI] self.data: " + str(self.data))
         key_list = list(self.data.keys())
         self.logger.debug("[SEOJI] key_list: " + str(key_list))
+        overlay_file = None
         
         for key in key_list:
             self.logger.debug("[SEOJI] key: " + str(key))
