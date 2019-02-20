@@ -318,6 +318,9 @@ class DownloadHandler(Action):  # pylint: disable=too-many-instance-attributes
         else:
             with open(fname, 'wb') as dwnld_file:
                 self.logger.debug("[SEOJI] download!")
+                '''
+                ################# temp commant out #####################
+                '''
                 for buff in self.reader():
                     update_progress()
                     dwnld_file.write(buff)
@@ -369,6 +372,7 @@ class DownloadHandler(Action):  # pylint: disable=too-many-instance-attributes
                 # Nexell extension
                 if 'nexell_ext' in self.parameters['images']:
                     self.logger.debug("[SEOJI] nexell_ext exist!")
+                    ################# temp commant out #####################
                     tar_cmd = ['tar', 'xvf', target_fname_path, '-C', os.path.dirname(origin)]
                     self.logger.debug("[SEOJI] tar_cmd: " + str(tar_cmd))
                     command_output = self.run_command(tar_cmd)
@@ -383,7 +387,16 @@ class DownloadHandler(Action):  # pylint: disable=too-many-instance-attributes
                             outfile=target_fname_path)
                 self.set_namespace_data(action='download-action', label=self.key, key='file', value=target_fname_path)
                 self.set_namespace_data(action='download-action', label='file', key=self.key, value=target_fname)
+                
             self.logger.debug("Using %s archive" % archive)
+        else:
+            # 'archive' not in parameters
+            if 'nexell_ext' in self.parameters['images']:
+                self.logger.debug("[SEOJI] no archive and images include 'nexell_ext'")
+                origin = fname
+                mv_cmd = ['mv', os.path.dirname(origin)+'/*', os.path.dirname(origin)+'/../'+self.parameters['images']['nexell_ext']['dir_name']]
+                self.logger.debug("[SEOJI] mv_cmd: " + str(mv_cmd))
+                os.system(" ".join(mv_cmd))
 
         if md5sum is not None:
             chk_md5sum = self.get_namespace_data(action='download-action', label=self.key, key='md5')

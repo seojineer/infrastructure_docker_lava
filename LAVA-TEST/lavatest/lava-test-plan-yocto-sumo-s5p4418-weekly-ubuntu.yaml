@@ -1,7 +1,7 @@
 device_type: s5p4418-navi-ref-type
-job_name: s5p4418-navi-ref-all-pass
+job_name: lava-test-s5p4418-navi-ref-yocto-sumo-ubuntu-weekly
 tags:
-  - s5p4418-navi-ref
+  - s5p4418-navi-ref-ubuntu
 timeouts:
   job:
     minutes: 60
@@ -17,28 +17,10 @@ protocols:
     name: s5p4418-test
     template: debian
     distribution: debian
-    release: stretch
+    release: jessie
     arch: amd64
 
 actions:
-  - deploy:
-      namespace: s5p4418-lxc-dummy-deploy
-      timeout:
-        minutes: 10
-      to: lxc
-      os: debian
-      nexell_ext: dummy
-      
-  - boot:
-      namespace: s5p4418-lxc-dummy-boot
-      connection: ssh
-      method: lxc
-      prompts:
-      - 'root@new_lava_slave:~#'
-      timeout:
-        minutes: 10
-      nexell_ext: dummy
-
   - deploy:
       failure_retry: 3
       namespace: s5p4418-deploy
@@ -47,67 +29,71 @@ actions:
       to: fastboot
       images:
         nexell_ext:
-          url: http://confluence.nexell.co.kr:8080/s5p4418/android/nougat/result-navi_ref-2019-02-05.tar.gz
-          #compression: gz
+          url: http://192.168.1.25:8080/s5p4418/yocto/sumo/weekly/result-s5p4418-navi-ref-ubuntu-for-lava-test.tar.gz
           archive: tar
-          dir_name: result-s5p4418-navi_ref
+          dir_name: result-s5p4418-navi-ref-ubuntu
           deploy_script: /home/lava/bin/nexell-lava-commands.sh
           deploy_command1: reboot-bootloader
           deploy_command2: fastboot-download
-          #deploy_command1: test1
-          #deploy_command2: test2
+          #deploy_command1: dummy1
+          #deploy_command2: dummy2
           device_path: '/dev/ttyUSB0'
           afterdeploy_command1: 'False'
           afterdeploy_command2: 'False'
           test: nothing
-      os: android
+      os: oe
 
   - boot:
       namespace: s5p4418-boot
       connection: serial
       method: fastboot
       prompts:
-      - 'navi_ref:/'
+      - 'nexell@nexell-ubuntu:'
       auto_login:
-        login_prompt: 's5p4418-navi-ref login:'
-        username: root
+        login_prompt: 'nexell-ubuntu login:'
+        username: nexell
+        password_prompt: 'Password:'
+        password: nexell
       parameters:
         shutdown-message: "reboot: Restarting system"
       timeout:
         minutes: 10
       nexell_ext:
           command: /home/lava/bin/nexell-lava-commands.sh
-          dir_name: result-s5p4418-navi_ref
-          command_param: boot-android-change-serial
+          dir_name: result-s5p4418-navi-ref-ubuntu
           #command_param: boot
+          #command_param: yocto-uboot-serial
+          command_param: boot-yocto
           command_param2: enter
+          #command_param: dummy1
+          #command_param2: dummy2
+          command_param3: auto-login-cmd
+          command_param4: start-adbd
+          command_param5: enter
           device_path: '/dev/ttyUSB0'
   - test:
       namespace: s5p4418-deploy
       connection-namespace: s5p4418-boot
       connection: serial
       timeout:
-        minutes: 3
-      failure_retry: 3
+        minutes: 40
+      #failure_retry: 3
       name: s5p4418-navi-ref-test
+      nexell_ext:
+          command: /home/lava/bin/nexell-lava-commands.sh
+          dir_name: result-s5p4418-navi-ref-ubuntu
+          device_path: '/dev/ttyUSB0'
+          password: nexell
       definitions:
           - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
             from: git
             path: lava-test-shell/smoke-tests-basic.yaml
             name: smoke-tests
-
-  - test:
-      namespace: s5p4418-lxc-dummy-deploy
-      connection-namespace: s5p4418-lxc-dummy-boot
-      timeout:
-        minutes: 40
-      #failure_retry: 3
-      nexell_ext: dummy
-      definitions:
           - repository: https://github.com/seojineer/test-definition.git
             from: git
-            path: automated/android/apk-automation/apk-automation.yaml
-            name: antutu-nexell
+            path: automated/linux/kselftest/nexell-kselftest.yaml
+            name: nexell-kselftest
             params:
-                TEST_NAME: antutu-nexell
-                LOOPS: 1
+                ROOT: true
+                #TEST_NAME: antutu-nexell
+                #LOOPS: 1

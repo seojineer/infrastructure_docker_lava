@@ -24,8 +24,8 @@ set -e
 
 CURRENT_PATH=`dirname $0`
 TOOLS_PATH=`readlink -ev $CURRENT_PATH`
-SERIAL=$1
-DEVICE_PATH=$2
+#SERIAL=$1
+#DEVICE_PATH=$2
 
 PARTMAP=
 UPDATE_ALL=true
@@ -68,7 +68,7 @@ function vmsg()
 
 function parse_args()
 {
-    ARGS=$(getopt -o t:h -- "$@");
+    ARGS=$(getopt -o t:d:s:h -- "$@");
     eval set -- "$ARGS";
 
     while true; do
@@ -83,6 +83,10 @@ function parse_args()
                     rootfs ) UPDATE_ALL=false; UPDATE_ROOT=true ;;
 		    *      ) usage; exit 1 ;;
                  esac
+                 shift 2 ;;
+            -s ) SERIAL=$2
+                 shift 2 ;;
+            -d ) DEVICE_PATH=$2
                  shift 2 ;;
             -h ) usage; exit 1 ;;
             -- ) break ;;
@@ -296,7 +300,8 @@ function fastboot_device_check()
 		"")
 			echo "nothing"
 			echo -n $'\cc' > $DEVICE_PATH
-			echo "fast 0" > $DEVICE_PATH;;
+			echo "fast 0" > $DEVICE_PATH
+			sleep 4;;
 			#exit;;
 		*)
 			echo "$SERIAL ok - ${1}";;
@@ -308,6 +313,7 @@ print_args
 echo "===============>"
 echo -n $'\cc' > $DEVICE_PATH
 echo "fast 0" > $DEVICE_PATH
+sleep 4
 update_partmap ${PARTMAP}
 
 if [ "${BOARD_SOCNAME}" == "s5p6818" ]; then
@@ -337,6 +343,7 @@ update_boot ${RESULT_DIR}/boot.img
 #fastboot_device_check root
 echo -n $'\cc' > $DEVICE_PATH
 echo "fast 0" > $DEVICE_PATH
+sleep 4
 
 update_root ${RESULT_DIR}/rootfs.img
 echo "==============here!============"
@@ -349,4 +356,5 @@ fi
 #fastboot_device_check fastboot_continue
 echo -n $'\cc' > $DEVICE_PATH
 echo "fast 0" > $DEVICE_PATH
+sleep 4
 sudo fastboot continue -s $SERIAL

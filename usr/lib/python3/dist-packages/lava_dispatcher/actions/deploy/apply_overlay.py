@@ -687,14 +687,18 @@ class ApplyNexellOverlay(Action):
         
         for key in key_list:
             self.logger.debug("[SEOJI] key: " + str(key))
-            # check if key include 'lxc'
             if 'lxc' in key:
+                '''
+                check if key include 'lxc'.
+                key is namespace of test job action. (deploy, boot, test)
+                '''
                 self.logger.debug("[SEOJI] yes! key includes 'lxc' - pass")
             else:
-                overlay_file = self.data[key]['compress-overlay'].get('output').get('file')
-                self.logger.debug("[SEOJI] overlay_file: " + str(overlay_file))
-                lava_test_results_dir = self.data[key]['test']['results']['lava_test_results_dir']
-                self.logger.debug("[SEOJI] deploy/apply_overlay.py lava_test_results_dir: "+str(lava_test_results_dir))
+                if 'compress-overlay' in self.data[key]:
+                    overlay_file = self.data[key]['compress-overlay'].get('output').get('file')
+                    self.logger.debug("[SEOJI] overlay_file: " + str(overlay_file))
+                    lava_test_results_dir = self.data[key]['test']['results']['lava_test_results_dir']
+                    self.logger.debug("[SEOJI] deploy/apply_overlay.py lava_test_results_dir: "+str(lava_test_results_dir))
 
         #overlay_file = self.get_namespace_data(action='compress-overlay', label='output', key='file')
         #overlay_file = self.data[keys[0]]['compress-overlay'].get('output').get('file')

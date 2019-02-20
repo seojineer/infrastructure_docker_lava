@@ -89,7 +89,10 @@ class ConnectTelnet(Action):
                 # Wait USB_SHOW_UP_TIMEOUT seconds for usb device to show up
                 self.logger.info("Wait %d seconds for usb device to show up",
                                  USB_SHOW_UP_TIMEOUT)
-                sleep(USB_SHOW_UP_TIMEOUT)
+                # Nexell extension
+                self.logger.debug("[SEOJI] change timeout for quick test.")
+                #sleep(USB_SHOW_UP_TIMEOUT)
+                sleep(3)
 
                 devices =[device_path]
 
@@ -115,4 +118,6 @@ class ConnectTelnet(Action):
         connection = super(ConnectTelnet, self).run(connection, args)
         connection.prompt_str = self.parameters['prompts']
         self.data['boot-result'] = 'failed' if self.errors else 'success'
+
+        self.logger.debug("[SEOJI]" + str(connection))
         return connection

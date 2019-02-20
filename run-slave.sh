@@ -7,7 +7,7 @@ docker run -it --name new_lava_slave \
        --device=/dev/ttyUSB1 \
        --device=/dev/ttyUSB2 \
        --device=/dev/ttyUSB3 \
-	   --device=/dev/ttyUSB4 \
+       --device=/dev/ttyUSB4 \
        --device=/dev/ttyUSB5 \
        --device=/dev/ttyUSB6 \
        --device=/dev/ttyUSB7 \

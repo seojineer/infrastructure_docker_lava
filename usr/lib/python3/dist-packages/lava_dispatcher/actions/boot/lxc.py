@@ -239,5 +239,6 @@ class NexellStartAction(Action):
     def run(self, connection, args=None):
         connection = super(NexellStartAction, self).run(connection, args)
         nexell_cmd = ['hostname']
+        #nexell_cmd = ['ssh', 'localhost']
         command_output = self.run_command(nexell_cmd)
         return connection

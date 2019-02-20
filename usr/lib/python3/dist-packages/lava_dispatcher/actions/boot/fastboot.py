@@ -127,11 +127,10 @@ class BootFastbootAction(BootAction):
         if 'nexell_ext' in parameters:
             self.logger.debug("[SEOJI] ****** parameters: %s", parameters)
             self.internal_pipeline.add_action(NexellFastbootBootAction(parameters))
-            # SEOJI 190116 add for adb push overlay files to DUT
-            self.internal_pipeline.add_action(WaitForAdbDeviceForNexell())
-            self.internal_pipeline.add_action(ApplyNexellOverlay())
             self.internal_pipeline.add_action(ConnectDevice())
-            #self.internal_pipeline.add_action(ConnectTelnet(parameters))
+            self.internal_pipeline.add_action(AutoLoginAction())
+            self.internal_pipeline.add_action(WaitForAdbDeviceForNexell(parameters))
+            self.internal_pipeline.add_action(ApplyNexellOverlay())
             #self.internal_pipeline.add_action(WaitForPromptForNexell(parameters))
             self.internal_pipeline.add_action(ExpectShellSession())
         else:
@@ -215,6 +214,32 @@ class NexellFastbootBootAction(Action):
         return connection
 
 # Nexell extension
+class NexellRunCmds(Action):
+    """
+    This action runs command line with connections.
+    """
+    def __init__(self,parameters):
+        super(NexellRunCmds, self).__init__()
+        self.name = "nexell-run-commands"
+        self.summary = "run commands parsed from job yaml"
+        self.description = "run nexell commands"
+        self.command = ''
+        self.dir_name = parameters['nexell_ext']['dir_name']
+        self.cmd_script = parameters['nexell_ext']['command']
+        self.cmd_param = parameters['nexell_ext']['command_param3']
+        self.device_path = parameters['nexell_ext']['device_path']
+
+    def validate(self):
+        super(NexellRunCmds, self).validate()
+
+    def run(self, connection, args=None):
+        connection = super(NexellFastbootBootAction, self).run(connection, args)
+        cmd = [self.cmd_script, self.cmd_param, self.dir_name, self.device_path]
+        self.logger.debug("[SEOJI] cmd" + str(cmd))
+        command_output = self.run_command(cmd)
+        return connection
+
+# Nexell extension
 class WaitForPromptForNexell(Action):
     """
     This action calls fastboot to boot into the system.
@@ -251,12 +276,17 @@ class WaitForAdbDeviceForNexell(Action):
     Waits for device that gets connected using adb.
     """
 
-    def __init__(self):
+    def __init__(self,parameters):
         super(WaitForAdbDeviceForNexell, self).__init__()
         self.name = "wait-for-adb-device-by-nexell"
         self.summary = "Waits for adb device"
         self.description = "Waits for availability of adb device"
         self.prompts = []
+        self.dir_name = parameters['nexell_ext']['dir_name']
+        self.cmd_script = parameters['nexell_ext']['command']
+        self.device_path = parameters['nexell_ext']['device_path']
+        self.params = parameters['nexell_ext']
+        self.parameters = parameters
 
     def validate(self):
         super(WaitForAdbDeviceForNexell, self).validate()
@@ -267,6 +297,35 @@ class WaitForAdbDeviceForNexell(Action):
                 
     def run(self, connection, args=None):
         connection = super(WaitForAdbDeviceForNexell, self).run(connection, args)
+
+        if 'command_param4' in self.params:
+            '''
+            For running start_adbd.sh
+            '''
+            self.logger.debug("[SEOJI] command_param4 in parameters")
+            nexell_cmd = [self.cmd_script, self.params['command_param4'], self.dir_name, self.device_path]
+            self.logger.debug("[SEOJI] cmd" + str(nexell_cmd))
+            command_output = self.run_command(nexell_cmd)
+
+            if 'auto_login' in self.parameters:
+                '''
+                Entering password is needed when first use sudo command.
+                '''
+                self.logger.debug("[SEOJI] auto_login in parameters")
+                if 'password' in self.parameters['auto_login']:
+                    self.logger.debug("[SEOJI] password in parameters['auto_login']")
+                    '''
+                    nexell_cmd = ['echo', self.parameters['auto_login']['password'], '>', self.device_path]
+                    self.logger.debug("[SEOJI] nexell_cmd: " + str(nexell_cmd))
+                    command_output = self.run_command(nexell_cmd)
+                    '''
+                    # test_connection
+                    with connection.test_connection() as test_connection:
+                        self.logger.debug("[SEOJI] connection.test_connection(): " + str(connection.test_connection))
+                        test_connection.sendline(self.parameters['auto_login']['password'])
+
+                    
+
         adb_cmd = ['adb', 'start-server']
         serial_number = self.job.device['adb_serial_number']
         self.logger.debug("Starting adb daemon")

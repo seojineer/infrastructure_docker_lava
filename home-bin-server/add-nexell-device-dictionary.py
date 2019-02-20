@@ -2,7 +2,7 @@ import xmlrpc.client
 import sys
 
 username = "admin"
-token = "56h8gczfirmax1ap5cbkkncec0jt6qhbebohz4n4mxlst6e32p5quaoiurm45mhx36fnfdxubczfir7jtq23zxzpznk20u80j8da2uz5plgp4ejjz2z8z1ac60gh3jh8"
+token = "rl034q0tw089k2zdf257us9q80x5n72lw5q5rbdq80ucjz324qjb4kk1tdj3irs7qufy8bses68qz6boxgqytgu4g7l53ka057ud0wlmqomtbxed0p0k96ebf7qkk42f"
 hostname = "192.168.1.20"
 server = xmlrpc.client.ServerProxy("http://%s:%s@%s/RPC2" % (username, token, hostname), allow_none=True)
 
@@ -15,5 +15,7 @@ def dic_update(device_name):
 dic_update('qemu01')
 dic_update('qemu02')
 dic_update('s5p4418-navi-ref-qt')
-dic_update('s5p4418-navi-ref-tiny')
 dic_update('s5p4418-navi-ref')
+dic_update('s5p4418-navi-ref-ubuntu')
+dic_update('s5p6818-avn-ref')
+dic_update('s5p4418-convergence-svmc')
