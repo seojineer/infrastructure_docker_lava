@@ -22,19 +22,19 @@ protocols:
 
 actions:
   - deploy:
-      namespace: s5p4418-lxc-dummy-deploy
+      namespace: lxc-deploy
       timeout:
         minutes: 10
       to: lxc
-      os: debian
+      os: ubuntu
       nexell_ext: dummy
-      
+
   - boot:
-      namespace: s5p4418-lxc-dummy-boot
+      namespace: lxc-boot
       connection: ssh
       method: lxc
       prompts:
-      - 'root@new_lava_slave:'
+      - 'root@new_lava_slave2:'
       timeout:
         minutes: 10
       nexell_ext: dummy
@@ -51,9 +51,11 @@ actions:
           archive: tar
           dir_name: result-s5p4418-navi_ref
           deploy_script: /home/lava/bin/nexell-lava-commands.sh
-          deploy_command1: reboot-bootloader
-          deploy_command2: fastboot-download
-          device_path: '/dev/ttyUSB0'
+          #deploy_command1: reboot-bootloader
+          #deploy_command2: fastboot-download
+          deploy_command1: dummy1
+          deploy_command2: dummy2
+          device_path: '/dev/ttyUSB2'
           afterdeploy_command1: 'False'
           afterdeploy_command2: 'False'
           test: nothing
@@ -75,28 +77,13 @@ actions:
       nexell_ext:
           command: /home/lava/bin/nexell-lava-commands.sh
           dir_name: result-s5p4418-navi_ref
-          command_param: boot-android-change-serial
-          #command_param: boot
+          #command_param: boot-android-change-serial
+          command_param: boot
           command_param2: enter
-          command_param3: auto-login-cmd
-          device_path: '/dev/ttyUSB0'
+          device_path: '/dev/ttyUSB2'
   - test:
-      namespace: s5p4418-deploy
-      connection-namespace: s5p4418-boot
-      connection: serial
-      timeout:
-        minutes: 3
-      failure_retry: 3
-      name: s5p4418-navi-ref-test
-      definitions:
-          - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
-            from: git
-            path: lava-test-shell/smoke-tests-basic.yaml
-            name: smoke-tests
-
-  - test:
-      namespace: s5p4418-lxc-dummy-deploy
-      connection-namespace: s5p4418-lxc-dummy-boot
+      namespace: lxc-deploy
+      connection-namespace: lxc-boot
       timeout:
         minutes: 40
       #failure_retry: 3
@@ -109,3 +96,9 @@ actions:
             params:
                 TEST_NAME: antutu-nexell
                 LOOPS: 1
+          - repository: https://github.com/seojineer/test-definition.git
+            from: git
+            path: automated/android/nexell-cts/nexell-cts.yaml
+            name: cts-test
+            params:
+                TEST_PARAMS: "run cts -m CtsBionicTestCases --abi armeabi-v7a --disable-reboot --skip-preconditions --skip-device-info"

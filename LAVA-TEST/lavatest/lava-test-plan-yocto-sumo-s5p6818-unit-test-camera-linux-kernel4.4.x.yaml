@@ -1,0 +1,86 @@
+device_type: s5p6818-avn-ref-type
+job_name: lava-test-s5p6818-avn-ref-yocto-sumo-tiny-camera-linux-kernel4.4.x
+tags:
+  - s5p6818-avn-ref-tiny
+timeouts:
+  job:
+    minutes: 60
+  action:
+    minutes: 30
+  connection:
+    minutes: 20
+priority: medium
+visibility: public
+
+protocols:
+  lava-lxc:
+    name: s5p6818-test
+    template: debian
+    distribution: debian
+    release: jessie
+    arch: amd64
+
+actions:
+  - deploy:
+      failure_retry: 3
+      namespace: s5p6818-deploy
+      timeout:
+        minutes: 10
+      to: fastboot
+      images:
+        nexell_ext:
+          url: http://192.168.1.25:8080/s5p6818/yocto/sumo/daily/result-s5p6818-avn-ref-tiny-camera-for-lava-test.tar.gz
+          #url: http://192.168.1.25:8080/s5p6818/kernel/camera_test/boot.img
+          archive: tar
+          dir_name: result-s5p6818-avn-ref-tiny
+          deploy_script: /home/lava/bin/nexell-lava-commands.sh
+          deploy_command1: reboot-bootloader
+          deploy_command2: fastboot-download
+          #deploy_command1: dummy1
+          #deploy_command2: dummy2
+          device_path: '/dev/ttyUSB1'
+          afterdeploy_command1: 'False'
+          afterdeploy_command2: 'False'
+          test: nothing
+      os: oe
+
+  - boot:
+      namespace: s5p6818-boot
+      connection: serial
+      method: fastboot
+      prompts:
+      - 'root@s5p6818-avn-ref:'
+      auto_login:
+        login_prompt: 's5p6818-avn-ref login:'
+        username: root
+      parameters:
+        shutdown-message: "reboot: Restarting system"
+      timeout:
+        minutes: 10
+      nexell_ext:
+          command: /home/lava/bin/nexell-lava-commands.sh
+          dir_name: result-s5p6818-avn-ref-tiny
+          #command_param: boot
+          #command_param: boot-yocto
+          command_param: yocto-uboot-serial
+          command_param2: enter
+          command_param3: auto-login-cmd
+          device_path: '/dev/ttyUSB1'
+  - test:
+      namespace: s5p6818-deploy
+      connection-namespace: s5p6818-boot
+      connection: serial
+      timeout:
+        minutes: 40
+      #failure_retry: 3
+      name: s5p6818-navi-ref-test
+      nexell_ext:
+          command: /home/lava/bin/nexell-lava-commands.sh
+          dir_name: result-s5p6818-avn-ref-tiny
+          device_path: '/dev/ttyUSB1'
+          password: nexell
+      definitions:
+          - repository: https://github.com/seojineer/test-definition.git
+            from: git
+            path: automated/linux/nexell-camera/nexell-camera.yaml
+            name: nexell-camera

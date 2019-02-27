@@ -19,7 +19,7 @@ function run_command()
 	echo $command
 
     if [ "$command" == "reboot-bootloader" ]; then
-	    #echo "reboot" > "${DEVICE_PATH}"
+	    echo "reboot" > "${DEVICE_PATH}"
 	    sleep 5
 
 	# android
@@ -251,9 +251,9 @@ function run_command()
 		if [ "$j" -eq "1" ]; then
 			# remount as read-write filesystem
 			sleep  20
-			adb shell settings put global stay_on_while_plugged_in 3
+			adb -s ${path:7} shell settings put global stay_on_while_plugged_in 3
 			sleep 5
-			adb shell input swipe 817 500 817 300
+			adb -s ${path:7} shell input swipe 817 500 817 300
 			sleep 5
 			echo "su" > "${DEVICE_PATH}"
 			echo "mount -o rw,remount rootfs /" > "${DEVICE_PATH}"
