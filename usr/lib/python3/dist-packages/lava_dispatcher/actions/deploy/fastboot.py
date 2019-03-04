@@ -125,8 +125,8 @@ class FastbootAction(DeployAction):  # pylint:disable=too-many-instance-attribut
             #self.internal_pipeline.add_action(OverlayAction())
 
             # download build result
-            self.logger.debug("[SEOJI] url:" + str(parameters['images']['nexell_ext']['url']))
             if 'url' in parameters['images']['nexell_ext']:
+                self.logger.debug("[SEOJI] url:" + str(parameters['images']['nexell_ext']['url']))
                 self.path = '/opt/share'
                 self.internal_pipeline.add_action(DownloaderAction('nexell_ext', self.path))
                 #if 'compression' in parameters['images']['nexell_ext]:

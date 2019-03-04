@@ -128,10 +128,11 @@ class BootFastbootAction(BootAction):
             self.logger.debug("[SEOJI] ****** parameters: %s", parameters)
             self.internal_pipeline.add_action(NexellFastbootBootAction(parameters))
             self.internal_pipeline.add_action(ConnectDevice())
-            self.internal_pipeline.add_action(AutoLoginAction())
+            if self.has_prompts(parameters):
+                if 'auto_login' in parameters:
+                    self.internal_pipeline.add_action(AutoLoginAction())
             self.internal_pipeline.add_action(WaitForAdbDeviceForNexell(parameters))
             self.internal_pipeline.add_action(ApplyNexellOverlay())
-            #self.internal_pipeline.add_action(WaitForPromptForNexell(parameters))
             self.internal_pipeline.add_action(ExpectShellSession())
         else:
             if parameters.get("commands"):
