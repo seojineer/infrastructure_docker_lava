@@ -218,6 +218,15 @@ function run_command()
     elif [ "$command" == 'dummy2' ]; then
 		echo "dummuy2"
 
+    elif [ "$command" == 'boot-android' ]; then
+	sleep 10
+	# change fastboot serial number 
+	echo "setenv bootargs 'console=ttyAMA3,115200n8 loglevel=7 printk.time=1 androidboot.hardware=navi_ref androidboot.console=ttyAMA3 androidboot.serialno=${path:7} quiet'" > "${DEVICE_PATH}"; sleep 5
+	echo "setenv bootargs 'console=ttyAMA3,115200n8 loglevel=7 printk.time=1 androidboot.hardware=navi_ref androidboot.console=ttyAMA3 androidboot.serialno=${path:7} quiet'" > "${DEVICE_PATH}"; sleep 5
+	echo "setenv bootargs 'console=ttyAMA3,115200n8 loglevel=7 printk.time=1 androidboot.hardware=navi_ref androidboot.console=ttyAMA3 androidboot.serialno=${path:7} quiet'" > "${DEVICE_PATH}"; sleep 5
+        echo "boot" > "${DEVICE_PATH}"
+	sleep 15
+
     elif [ "$command" == 'boot-android-change-serial' ]; then
 	sleep 10
         echo "reset" > "${DEVICE_PATH}"
