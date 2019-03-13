@@ -373,6 +373,14 @@ class DownloadHandler(Action):  # pylint: disable=too-many-instance-attributes
                 if 'nexell_ext' in self.parameters['images']:
                     self.logger.debug("[SEOJI] nexell_ext exist!")
                     ################# temp commant out #####################
+                    if 'dir_name' in self.parameters['images']['nexell_ext']:
+                        build_result_file_path = '/opt/share/'+self.parameters['images']['nexell_ext']['dir_name']
+                        self.logger.debug("[SEOJI] build_result_file_path: " + build_result_file_path)
+                        if os.path.isdir(build_result_file_path):
+                            self.logger.debug("[SEOJI] build_result_file_path exist!")
+                            #os.remove(build_result_file_path)
+                            shutil.rmtree(build_result_file_path)
+
                     tar_cmd = ['tar', 'xvf', target_fname_path, '-C', os.path.dirname(origin)]
                     self.logger.debug("[SEOJI] tar_cmd: " + str(tar_cmd))
                     command_output = self.run_command(tar_cmd)
